@@ -1,67 +1,64 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KRONOS Terminal</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
-:root {
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+:root{
   --bg0:#080a0c;--bg1:#0e1216;--bg2:#141920;--bg3:#1a2028;
   --line:#1e2830;--line2:#263040;
   --up:#c0392b;--up2:#e74c3c;--dn:#27ae60;--dn2:#2ecc71;
-  --acc:#f39c12;--acc2:#f1c40f;
-  --blue:#2980b9;--blue2:#3498db;--purple:#8e44ad;
+  --acc:#f39c12;--acc2:#f1c40f;--blue2:#3498db;--purple:#9b59b6;
   --text0:#ecf0f1;--text1:#bdc3c7;--text2:#7f8c8d;--text3:#4a5568;
-  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
 body{background:var(--bg0);color:var(--text1);font-family:var(--mono);font-size:12px;display:flex;flex-direction:column}
-body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px);pointer-events:none;z-index:9999}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:9999}
 
-/* ── Topbar ── */
+/* topbar */
 .topbar{display:flex;align-items:center;height:38px;background:var(--bg1);border-bottom:1px solid var(--line);flex-shrink:0;padding:0 12px;gap:0}
 .logo-block{display:flex;align-items:center;gap:10px;padding-right:16px;border-right:1px solid var(--line2);margin-right:16px}
-.logo-k{font-size:18px;font-weight:700;color:var(--acc);letter-spacing:-1px;text-shadow:0 0 20px rgba(243,156,18,.5)}
+.logo-k{font-size:18px;font-weight:700;color:var(--acc);text-shadow:0 0 20px rgba(243,156,18,.5)}
 .logo-sub{font-size:9px;color:var(--text3);letter-spacing:3px}
 .ticker-display{font-size:20px;font-weight:700;color:var(--text0);letter-spacing:2px;min-width:80px}
 .price-display{display:flex;align-items:baseline;gap:8px;margin-left:16px}
 .price-main{font-size:22px;font-weight:600;color:var(--text0);font-variant-numeric:tabular-nums}
 .price-chg{font-size:13px;font-weight:500;font-variant-numeric:tabular-nums}
 .price-chg.up{color:var(--up2)}.price-chg.dn{color:var(--dn2)}
-.topbar-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px}
 .signal-pill{font-size:10px;letter-spacing:1px;padding:3px 8px;border-radius:2px;font-weight:600}
-.sig-neutral{background:rgba(127,140,141,.2);color:var(--text2);border:1px solid var(--text3)}
+.sig-n{background:rgba(127,140,141,.2);color:var(--text2);border:1px solid var(--text3)}
 .sig-bull{background:rgba(192,57,43,.2);color:var(--up2);border:1px solid var(--up)}
 .sig-bear{background:rgba(39,174,96,.2);color:var(--dn2);border:1px solid var(--dn)}
-.clock{font-size:11px;color:var(--text3);font-variant-numeric:tabular-nums;letter-spacing:1px}
+.lang-btn{font-size:10px;padding:3px 8px;border:1px solid var(--line2);background:var(--bg2);color:var(--text2);font-family:var(--mono);cursor:pointer;border-radius:2px;transition:all .1s}
+.lang-btn.active,.lang-btn:hover{border-color:var(--acc);color:var(--acc)}
+.clock{font-size:11px;color:var(--text3);font-variant-numeric:tabular-nums}
 .status-led{width:6px;height:6px;border-radius:50%;background:var(--dn2);box-shadow:0 0 6px var(--dn2);animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-/* zoom controls */
-.zoom-controls{display:flex;gap:4px}
+/* zoom bar */
 .zc-btn{background:var(--bg2);border:1px solid var(--line2);color:var(--text2);font-family:var(--mono);font-size:11px;padding:3px 8px;cursor:pointer;border-radius:2px;transition:all .1s}
 .zc-btn:hover{border-color:var(--acc);color:var(--acc)}
 
-/* ── Layout ── */
+/* layout */
 .layout{display:grid;grid-template-columns:220px 1fr;flex:1;overflow:hidden;min-height:0}
-
-/* ── Left ── */
-.left-panel{background:var(--bg1);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+.left-panel{background:var(--bg1);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow-y:auto}
 .left-panel::-webkit-scrollbar{width:3px}
 .left-panel::-webkit-scrollbar-thumb{background:var(--line2)}
 .panel-section{border-bottom:1px solid var(--line);padding:10px 12px}
-.section-title{font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.sec-title{font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
 .ticker-input{width:100%;background:var(--bg0);border:1px solid var(--line2);border-radius:2px;color:var(--text0);font-family:var(--mono);font-size:16px;font-weight:700;letter-spacing:3px;padding:8px 10px;text-transform:uppercase;outline:none;transition:border-color .15s;margin-bottom:8px}
 .ticker-input:focus{border-color:var(--acc);box-shadow:0 0 0 1px rgba(243,156,18,.2)}
 .ticker-input::placeholder{color:var(--text3);font-size:13px}
 .quick-tickers{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
 .qt{background:var(--bg2);border:1px solid var(--line2);color:var(--text2);font-family:var(--mono);font-size:10px;padding:5px 2px;text-align:center;cursor:pointer;transition:all .1s;border-radius:1px}
-.qt:hover{background:var(--bg3);border-color:var(--acc);color:var(--acc)}
+.qt:hover{border-color:var(--acc);color:var(--acc)}
 .param-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .param-label{font-size:10px;color:var(--text2)}
 .param-val{font-size:11px;color:var(--text0);font-weight:600;min-width:40px;text-align:right}
@@ -75,9 +72,9 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .stat-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--line);font-size:11px}
 .stat-row:last-child{border-bottom:none}
 .stat-key{color:var(--text2)}
-.stat-val-up{color:var(--up2);font-weight:600;font-variant-numeric:tabular-nums}
-.stat-val-dn{color:var(--dn2);font-weight:600;font-variant-numeric:tabular-nums}
-.stat-val-n{color:var(--text0);font-weight:600;font-variant-numeric:tabular-nums}
+.sv-up{color:var(--up2);font-weight:600;font-variant-numeric:tabular-nums}
+.sv-dn{color:var(--dn2);font-weight:600;font-variant-numeric:tabular-nums}
+.sv-n{color:var(--text0);font-weight:600;font-variant-numeric:tabular-nums}
 .tech-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .tech-card{background:var(--bg2);border:1px solid var(--line2);border-radius:2px;padding:6px 8px}
 .tech-card-title{font-size:9px;color:var(--text3);letter-spacing:1px;margin-bottom:3px}
@@ -85,52 +82,44 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .log-area{flex:1;padding:8px 12px;font-size:10px;color:var(--text3);line-height:1.8;overflow-y:auto;min-height:80px}
 .log-area::-webkit-scrollbar{width:3px}
 .log-area::-webkit-scrollbar-thumb{background:var(--line2)}
-.log-line{color:var(--text3)}.log-ok{color:var(--dn2)}.log-warn{color:var(--acc)}.log-err{color:var(--up2)}.log-info{color:var(--blue2)}
+.log-ok{color:var(--dn2)}.log-warn{color:var(--acc)}.log-err{color:var(--up2)}.log-info{color:var(--blue2)}
 
-/* ── Right ── */
+/* right */
 .right-panel{display:flex;flex-direction:column;overflow:hidden;position:relative}
 .chart-header{display:flex;align-items:center;justify-content:space-between;padding:4px 14px;border-bottom:1px solid var(--line);background:var(--bg1);flex-shrink:0;height:32px}
 .chart-tabs{display:flex;gap:1px}
 .ctab{font-size:10px;padding:2px 10px;border:1px solid var(--line2);background:transparent;color:var(--text2);font-family:var(--mono);cursor:pointer;letter-spacing:1px;transition:all .1s}
 .ctab.active{background:var(--acc);border-color:var(--acc);color:#000;font-weight:700}
-.chart-meta{font-size:10px;color:var(--text3);letter-spacing:1px}
+.chart-meta{font-size:10px;color:var(--text3)}
 .charts-area{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:6px 10px 4px;gap:3px}
 .chart-wrap{position:relative}
 .chart-wrap.main-chart{flex:5;min-height:0}
 .chart-wrap.sub-chart{flex:1.4;min-height:0}
-.chart-wrap.vol-chart{flex:0.9;min-height:0}
+.chart-wrap.vol-chart{flex:.9;min-height:0}
 .chart-wrap canvas{width:100%!important;height:100%!important}
 .chart-label{position:absolute;top:4px;left:6px;font-size:9px;color:var(--text3);letter-spacing:1.5px;z-index:2;pointer-events:none}
 .chart-divider{height:1px;background:var(--line);flex-shrink:0}
-
-/* crosshair tooltip */
-.crosshair-tooltip{position:absolute;top:6px;left:50%;transform:translateX(-50%);background:rgba(14,18,22,.95);border:1px solid var(--line2);padding:5px 10px;font-size:11px;line-height:1.7;pointer-events:none;z-index:50;white-space:nowrap;border-radius:2px;display:none}
-.crosshair-tooltip.show{display:block}
-
-/* pred highlight badge */
 .pred-badge{position:absolute;top:4px;right:8px;font-size:9px;color:var(--acc);border:1px solid rgba(243,156,18,.4);padding:2px 8px;letter-spacing:1px;background:rgba(243,156,18,.08);z-index:2;pointer-events:none;display:none}
-.pred-badge.show{display:block}
-
-/* loading */
+.tooltip-box{position:absolute;top:6px;left:50%;transform:translateX(-50%);background:rgba(14,18,22,.96);border:1px solid var(--line2);padding:5px 12px;font-size:11px;line-height:1.8;pointer-events:none;z-index:50;white-space:nowrap;border-radius:2px;display:none}
 .loading-overlay{position:absolute;inset:0;background:rgba(8,10,12,.9);backdrop-filter:blur(3px);display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:100}
 .loading-overlay.show{display:flex}
 .loading-bar-wrap{width:240px;height:2px;background:var(--line2);border-radius:1px;overflow:hidden}
-.loading-bar{height:100%;background:var(--acc);border-radius:1px;width:0%;transition:width .3s ease;box-shadow:0 0 8px var(--acc)}
+.loading-bar{height:100%;background:var(--acc);width:0%;transition:width .3s;box-shadow:0 0 8px var(--acc)}
 .loading-text{font-size:11px;color:var(--text2);letter-spacing:2px}
-.loading-step{font-size:10px;color:var(--text3);letter-spacing:1px;height:14px}
+.loading-step{font-size:10px;color:var(--text3);height:14px}
 .empty-state{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;pointer-events:none}
 .empty-icon{font-size:40px;opacity:.12;filter:grayscale(1)}
 .empty-txt{font-size:11px;color:var(--text3);letter-spacing:2px}
-.disclaimer{padding:4px 14px;font-size:9px;color:var(--text3);border-top:1px solid var(--line);letter-spacing:.3px;flex-shrink:0}
+.disclaimer{padding:4px 14px;font-size:9px;color:var(--text3);border-top:1px solid var(--line);flex-shrink:0}
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div class="logo-block">
-    <div class="logo-k">K</div>
+    <div style="font-size:18px;font-weight:700;color:var(--acc);text-shadow:0 0 20px rgba(243,156,18,.5)">K</div>
     <div><div style="font-size:11px;font-weight:700;color:var(--text0);letter-spacing:2px">RONOS</div>
-         <div class="logo-sub">MARKET INTELLIGENCE</div></div>
+         <div style="font-size:9px;color:var(--text3);letter-spacing:3px">MARKET INTELLIGENCE</div></div>
   </div>
   <div class="ticker-display" id="hdrTicker">—</div>
   <div class="price-display">
@@ -138,15 +127,20 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
     <div class="price-chg" id="hdrChg">—</div>
   </div>
   <div class="topbar-right">
-    <div class="zoom-controls">
-      <button class="zc-btn" onclick="zoomIn()"  title="放大">＋</button>
-      <button class="zc-btn" onclick="zoomOut()" title="缩小">－</button>
-      <button class="zc-btn" onclick="resetZoom()" title="重置">↺</button>
-      <button class="zc-btn" id="btnMode" onclick="toggleMode()" title="切换模式">🔍拖拽</button>
+    <div style="display:flex;gap:3px">
+      <button class="lang-btn" id="lb-zh" onclick="switchLang('zh')">中文</button>
+      <button class="lang-btn" id="lb-en" onclick="switchLang('en')">EN</button>
+      <button class="lang-btn" id="lb-ja" onclick="switchLang('ja')">日本語</button>
     </div>
-    <span class="signal-pill sig-neutral" id="sigRSI">RSI —</span>
-    <span class="signal-pill sig-neutral" id="sigMACD">MACD —</span>
-    <span class="signal-pill sig-neutral" id="sigMA">MA —</span>
+    <div style="display:flex;gap:3px">
+      <button class="zc-btn" onclick="zoomIn()">＋</button>
+      <button class="zc-btn" onclick="zoomOut()">－</button>
+      <button class="zc-btn" onclick="resetZoom()">↺</button>
+      <button class="zc-btn" id="btnMode" onclick="toggleMode()">🔍</button>
+    </div>
+    <span class="signal-pill sig-n" id="sigRSI">RSI —</span>
+    <span class="signal-pill sig-n" id="sigMACD">MACD —</span>
+    <span class="signal-pill sig-n" id="sigMA">MA —</span>
     <div class="clock" id="clock">--:--:--</div>
     <div class="status-led" id="statusLed"></div>
   </div>
@@ -155,7 +149,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 <div class="layout">
   <div class="left-panel">
     <div class="panel-section">
-      <div class="section-title" data-i18n="ticker">股票代码</div>
+      <div class="sec-title" id="t-ticker">股票代码</div>
       <input type="text" id="tickerInput" class="ticker-input" value="MU" placeholder="AAPL" maxlength="10" onkeydown="if(event.key==='Enter')runKronos()">
       <div class="quick-tickers">
         <button class="qt" onclick="setTicker('AAPL')">AAPL</button>
@@ -173,57 +167,57 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
       </div>
     </div>
     <div class="panel-section">
-      <div class="section-title" data-i18n="params">预测参数</div>
-      <div class="param-row"><span class="param-label" data-i18n="period">历史窗口</span><span class="param-val" id="valPeriod">60天</span></div>
-      <input type="range" class="param-slider" id="sliderPeriod" min="20" max="480" value="60" step="10" oninput="document.getElementById('valPeriod').textContent=this.value+T('day')">
-      <div class="param-row"><span class="param-label" data-i18n="pred">预测天数</span><span class="param-val" id="valPred">5天</span></div>
-      <input type="range" class="param-slider" id="sliderPred" min="1" max="30" value="5" step="1" oninput="document.getElementById('valPred').textContent=this.value+T('day')">
-      <div class="param-row"><span class="param-label" data-i18n="samples">采样路径</span><span class="param-val" id="valSamples">50条</span></div>
-      <input type="range" class="param-slider" id="sliderSamples" min="5" max="100" value="50" step="5" oninput="document.getElementById('valSamples').textContent=this.value+T('paths')">
+      <div class="sec-title" id="t-params">预测参数</div>
+      <div class="param-row"><span class="param-label" id="t-period">历史窗口</span><span class="param-val" id="valPeriod">60</span></div>
+      <input type="range" class="param-slider" id="sliderPeriod" min="20" max="480" value="60" step="10" oninput="updateSlider('valPeriod',this.value,'t-day')">
+      <div class="param-row"><span class="param-label" id="t-pred">预测天数</span><span class="param-val" id="valPred">5</span></div>
+      <input type="range" class="param-slider" id="sliderPred" min="1" max="30" value="5" step="1" oninput="updateSlider('valPred',this.value,'t-day')">
+      <div class="param-row"><span class="param-label" id="t-samples">采样路径</span><span class="param-val" id="valSamples">50</span></div>
+      <input type="range" class="param-slider" id="sliderSamples" min="5" max="100" value="50" step="5" oninput="updateSlider('valSamples',this.value,'t-paths')">
       <div class="param-row"><span class="param-label">Temperature</span><span class="param-val" id="valTemp">0.70</span></div>
       <input type="range" class="param-slider" id="sliderTemp" min="0.1" max="2.0" value="0.7" step="0.05" oninput="document.getElementById('valTemp').textContent=parseFloat(this.value).toFixed(2)">
     </div>
     <div class="panel-section">
-      <button class="run-btn" id="runBtn" onclick="runKronos()">▶ <span data-i18n="run">RUN</span></button>
+      <button class="run-btn" id="runBtn" onclick="runKronos()">▶ <span id="t-run">执行</span></button>
     </div>
     <div class="panel-section" id="statsSection" style="display:none">
-      <div class="section-title" data-i18n="summary">预测摘要</div>
+      <div class="sec-title" id="t-summary">预测摘要</div>
       <div class="stat-table" id="statsTable"></div>
     </div>
     <div class="panel-section" id="techSection" style="display:none">
-      <div class="section-title" data-i18n="tech">技术面</div>
+      <div class="sec-title" id="t-tech">技术面</div>
       <div class="tech-grid" id="techGrid"></div>
     </div>
     <div class="panel-section" style="flex:1;display:flex;flex-direction:column;min-height:80px;padding-bottom:0">
-      <div class="section-title" data-i18n="log">运行日志</div>
-      <div class="log-area" id="logArea"><div class="log-line">-- <span data-i18n="waiting">等待输入</span> --</div></div>
+      <div class="sec-title" id="t-log">运行日志</div>
+      <div class="log-area" id="logArea"></div>
     </div>
   </div>
 
   <div class="right-panel">
     <div class="chart-header">
       <div class="chart-tabs">
-        <button class="ctab active" data-i18n="daily">日K</button>
+        <button class="ctab active" id="t-daily">日K</button>
       </div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <span style="font-size:10px;color:var(--text3)" data-i18n="hint_zoom">滚轮缩放 · 拖拽平移 · 双击重置</span>
+      <div style="display:flex;align-items:center;gap:16px">
+        <span style="font-size:10px;color:var(--text3)" id="t-hint">滚轮缩放 · 拖拽平移 · 双击重置</span>
         <div class="chart-meta" id="chartMeta">Kronos-base · samples=50 · T=0.70</div>
       </div>
     </div>
     <div class="charts-area">
       <div class="chart-wrap main-chart">
-        <div class="chart-label">OHLC · MA5 · MA20 · MA60 · BOLL · <span style="color:var(--acc)">KRONOS FORECAST</span></div>
-        <div class="pred-badge" id="predBadge">◀ KRONOS <span data-i18n="forecast">预测区间</span> ▶</div>
-        <div class="crosshair-tooltip" id="tooltip"></div>
+        <div class="chart-label">OHLC · MA5 · MA20 · MA60 · BOLL · <span style="color:var(--acc)">KRONOS</span></div>
+        <div class="pred-badge" id="predBadge">◀ KRONOS <span id="t-forecast">预测区间</span> ▶</div>
+        <div class="tooltip-box" id="tooltipBox"></div>
         <canvas id="klineChart"></canvas>
         <div class="loading-overlay" id="loadingOverlay">
-          <div class="loading-text" data-i18n="inferring">KRONOS 推理中</div>
+          <div class="loading-text" id="t-inferring">KRONOS 推理中</div>
           <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar"></div></div>
           <div class="loading-step" id="loadingStep"></div>
         </div>
         <div class="empty-state" id="emptyState">
           <div class="empty-icon">📊</div>
-          <div class="empty-txt" data-i18n="hint_start">输入股票代码 · 点击 RUN</div>
+          <div class="empty-txt" id="t-hint2">输入股票代码 · 点击 RUN</div>
         </div>
       </div>
       <div class="chart-divider"></div>
@@ -242,168 +236,194 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
         <canvas id="volChart"></canvas>
       </div>
     </div>
-    <div class="disclaimer">
-      ⚠ <span data-i18n="disclaimer">免责声明：本工具仅供学术研究与技术演示，不构成投资建议。</span>
-      &nbsp;|&nbsp; <a href="https://www.zdoc.app/zh/shiyu-coder/Kronos" target="_blank" style="color:var(--blue2)">zdoc.app/zh/shiyu-coder/Kronos</a>
+    <div class="disclaimer" id="t-disclaimer">
+      ⚠ 免责声明：本工具仅供学术研究与技术演示，不构成投资建议。
+      | <a href="https://www.zdoc.app/zh/shiyu-coder/Kronos" target="_blank" style="color:var(--blue2)">zdoc.app/zh/shiyu-coder/Kronos</a>
     </div>
   </div>
 </div>
 
 <script>
-// ─── i18n ────────────────────────────────────────────────────────────────────
-const LANG_KEY = 'kronos_lang';
-const LANGS = {
+// ═══════════════════════════════════════════════════════
+// i18n — complete trilingual strings
+// ═══════════════════════════════════════════════════════
+const I18N = {
   zh: {
-    ticker:'股票代码',params:'预测参数',period:'历史窗口',pred:'预测天数',
-    samples:'采样路径',run:'执行',summary:'预测摘要',tech:'技术面',
-    log:'运行日志',waiting:'等待输入',daily:'日K',
-    hint_zoom:'滚轮缩放 · 拖拽平移 · 双击重置',
-    forecast:'预测区间',inferring:'KRONOS 推理中',
-    hint_start:'输入股票代码 · 点击 RUN',
-    disclaimer:'免责声明：本工具仅供学术研究与技术演示，不构成投资建议。',
-    day:'天',paths:'条',
-    cur_price:'当前价',pred_end:'预测末日',pred_chg:'预期变化',
-    pred_hi:'预测高点',pred_lo:'预测低点',hist_hi:'历史高点',
-    hist_lo:'历史低点',avg_vol:'30日均量',
-    server_on:'✅ 检测到 Kronos 服务器，使用真实模型',
+    ticker:'股票代码', params:'预测参数', period:'历史窗口', pred:'预测天数',
+    samples:'采样路径', run:'执行', summary:'预测摘要', tech:'技术面',
+    log:'运行日志', daily:'日K', hint:'滚轮缩放 · 拖拽平移 · 双击重置',
+    forecast:'预测区间', inferring:'KRONOS 推理中',
+    hint2:'输入股票代码 · 点击 RUN',
+    disclaimer:'⚠ 免责声明：本工具仅供学术研究与技术演示，不构成投资建议。',
+    day:'天', paths:'条',
+    cur:'当前价', pred_end:'预测末日', chg:'预期变化',
+    phi:'预测高点', plo:'预测低点', hhi:'历史高点', hlo:'历史低点', vol:'30日均量',
+    server_on:'✅ 已连接 Kronos 服务器（真实模型）',
     server_off:'⚠️  未检测到服务器，使用演示模式',
     server_hint:'   启动: python kronos_server.py',
-    drag_mode:'🖐平移',zoom_mode:'🔍缩放',
-    mode_hint:'滚轮缩放 · 拖拽平移 · 双击重置',
+    mode_zoom:'🔍缩放', mode_pan:'🖐平移',
+    ob:'超买', os:'超卖', neu:'中性', bull:'多头', bear:'空头',
+    steps:['连接 Yahoo Finance...','下载K线数据...','初始化模型...','分词处理...','自回归推理...','蒙特卡洛采样...','影线裁剪...','计算指标...','渲染图表...'],
   },
   en: {
-    ticker:'TICKER',params:'PARAMETERS',period:'History',pred:'Forecast Days',
-    samples:'Samples',run:'RUN',summary:'Forecast',tech:'Technicals',
-    log:'Log',waiting:'Enter ticker and click RUN',daily:'Daily',
-    hint_zoom:'Scroll=Zoom · Drag=Pan · DblClick=Reset',
-    forecast:'Forecast Zone',inferring:'KRONOS Inferring',
-    hint_start:'Enter Ticker · Click RUN',
-    disclaimer:'Disclaimer: For research & demo only. Not investment advice.',
-    day:'d',paths:'x',
-    cur_price:'Price',pred_end:'Forecast',pred_chg:'Expected',
-    pred_hi:'Pred High',pred_lo:'Pred Low',hist_hi:'52W High',
-    hist_lo:'52W Low',avg_vol:'30D Vol',
+    ticker:'TICKER', params:'PARAMETERS', period:'History Window', pred:'Forecast Days',
+    samples:'Samples', run:'RUN', summary:'FORECAST', tech:'TECHNICALS',
+    log:'LOG', daily:'Daily', hint:'Scroll=Zoom · Drag=Pan · DblClick=Reset',
+    forecast:'Forecast Zone', inferring:'KRONOS Inferring',
+    hint2:'Enter Ticker · Click RUN',
+    disclaimer:'⚠ Disclaimer: For research & demo only. Not investment advice.',
+    day:'d', paths:'x',
+    cur:'Price', pred_end:'Forecast', chg:'Expected',
+    phi:'Pred High', plo:'Pred Low', hhi:'52W High', hlo:'52W Low', vol:'30D AvgVol',
     server_on:'✅ Kronos server online – real model active',
-    server_off:'⚠️  No server – using demo simulation mode',
+    server_off:'⚠️  No server – using demo simulation',
     server_hint:'   Start: python kronos_server.py',
-    drag_mode:'🖐 Pan',zoom_mode:'🔍 Zoom',
-    mode_hint:'Scroll=Zoom · Drag=Pan · DblClick=Reset',
+    mode_zoom:'🔍Zoom', mode_pan:'🖐Pan',
+    ob:'Overbought', os:'Oversold', neu:'Neutral', bull:'Bullish', bear:'Bearish',
+    steps:['Connecting Yahoo Finance...','Downloading K-lines...','Loading model...','Tokenizing...','Autoregressive inference...','Monte Carlo sampling...','Clipping wicks...','Computing indicators...','Rendering charts...'],
   },
   ja: {
-    ticker:'銘柄コード',params:'予測パラメータ',period:'履歴期間',pred:'予測日数',
-    samples:'サンプル数',run:'実行',summary:'予測結果',tech:'テクニカル',
-    log:'ログ',waiting:'銘柄を入力してください',daily:'日足',
-    hint_zoom:'スクロール拡大 · ドラッグ移動 · ダブルクリックリセット',
-    forecast:'予測ゾーン',inferring:'KRONOS 推論中',
-    hint_start:'銘柄コードを入力 · RUN をクリック',
-    disclaimer:'免責事項：本ツールは学術・デモ目的のみ。投資助言ではありません。',
-    day:'日',paths:'本',
-    cur_price:'現在値',pred_end:'予測末日',pred_chg:'予想変化',
-    pred_hi:'予測高値',pred_lo:'予測安値',hist_hi:'期間高値',
-    hist_lo:'期間安値',avg_vol:'30日平均出来高',
-    server_on:'✅ Kronosサーバー接続 – 実モデル使用中',
-    server_off:'⚠️  サーバー未検出 – デモモード使用',
+    ticker:'銘柄コード', params:'予測パラメータ', period:'履歴期間', pred:'予測日数',
+    samples:'サンプル数', run:'実行', summary:'予測結果', tech:'テクニカル',
+    log:'ログ', daily:'日足', hint:'スクロール拡大・ドラッグ移動・ダブルクリックリセット',
+    forecast:'予測ゾーン', inferring:'KRONOS 推論中',
+    hint2:'銘柄コードを入力 · RUN をクリック',
+    disclaimer:'⚠ 免責事項：本ツールは学術・デモ目的のみ。投資助言ではありません。',
+    day:'日', paths:'本',
+    cur:'現在値', pred_end:'予測末日', chg:'予想変化',
+    phi:'予測高値', plo:'予測安値', hhi:'期間高値', hlo:'期間安値', vol:'30日平均出来高',
+    server_on:'✅ Kronosサーバー接続済み（実モデル使用中）',
+    server_off:'⚠️  サーバー未検出 – デモモード使用中',
     server_hint:'   起動: python kronos_server.py',
-    drag_mode:'🖐 移動',zoom_mode:'🔍 拡大',
-    mode_hint:'スクロール拡大 · ドラッグ移動 · ダブルクリックリセット',
+    mode_zoom:'🔍拡大', mode_pan:'🖐移動',
+    ob:'買われ過ぎ', os:'売られ過ぎ', neu:'中立', bull:'強気', bear:'弱気',
+    steps:['Yahoo Finance 接続中...','K線データ取得中...','モデル初期化中...','トークン処理中...','自己回帰推論中...','モンテカルロ実行中...','ヒゲカット処理中...','指標計算中...','チャート描画中...'],
   },
 };
 
-let curLang = localStorage.getItem(LANG_KEY) || 'zh';
-function T(k){ return (LANGS[curLang]||LANGS.zh)[k] || k; }
+// Read lang from URL param first, then localStorage
+const urlLang = new URLSearchParams(window.location.search).get('lang');
+let L = urlLang || localStorage.getItem('kronos_lang') || 'zh';
+if(!I18N[L]) L='zh';
 
-function applyLang() {
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const k = el.getAttribute('data-i18n');
-    el.textContent = T(k);
+function t(k){ return (I18N[L]||I18N.zh)[k]||k; }
+
+function applyLang(){
+  localStorage.setItem('kronos_lang', L);
+  // Update lang buttons
+  ['zh','en','ja'].forEach(l=>{
+    const b=document.getElementById('lb-'+l);
+    if(b) b.className='lang-btn'+(L===l?' active':'');
   });
-  document.getElementById('valPeriod').textContent = document.getElementById('sliderPeriod').value + T('day');
-  document.getElementById('valPred').textContent   = document.getElementById('sliderPred').value   + T('day');
-  document.getElementById('valSamples').textContent= document.getElementById('sliderSamples').value+ T('paths');
-  document.getElementById('hint_zoom') && (document.getElementById('hint_zoom').textContent = T('hint_zoom'));
-  localStorage.setItem(LANG_KEY, curLang);
-  checkServer();
+  // Update all labeled elements
+  const map={
+    't-ticker':'ticker','t-params':'params','t-period':'period','t-pred':'pred',
+    't-samples':'samples','t-run':'run','t-summary':'summary','t-tech':'tech',
+    't-log':'log','t-daily':'daily','t-hint':'hint','t-forecast':'forecast',
+    't-inferring':'inferring','t-hint2':'hint2','t-disclaimer':'disclaimer',
+  };
+  Object.entries(map).forEach(([id,key])=>{
+    const el=document.getElementById(id);
+    if(el) el.textContent=t(key);
+  });
+  // Update slider displays
+  updateSliderDisplay();
+  // Update mode button
+  document.getElementById('btnMode').textContent=dragMode?t('mode_zoom'):t('mode_pan');
+  // Re-log server status
+  updateServerLed();
 }
 
-function switchLang(l){ curLang = l; applyLang(); }
+function updateSliderDisplay(){
+  document.getElementById('valPeriod').textContent=document.getElementById('sliderPeriod').value+t('day');
+  document.getElementById('valPred').textContent=document.getElementById('sliderPred').value+t('day');
+  document.getElementById('valSamples').textContent=document.getElementById('sliderSamples').value+t('paths');
+}
 
-// ─── Clock ────────────────────────────────────────────────────────────────────
-setInterval(()=>{ document.getElementById('clock').textContent = new Date().toLocaleTimeString('zh-CN',{hour12:false}); },1000);
+function updateSlider(valId, val, unitKey){
+  document.getElementById(valId).textContent=val+t(unitKey);
+}
 
-// ─── Log ─────────────────────────────────────────────────────────────────────
-const logArea = document.getElementById('logArea');
-function log(msg,cls='log-line'){
+function switchLang(l){ L=l; applyLang(); }
+
+// ═══════════════════════════════════════════════════════
+// Clock
+// ═══════════════════════════════════════════════════════
+setInterval(()=>{ document.getElementById('clock').textContent=new Date().toLocaleTimeString('zh-CN',{hour12:false}); },1000);
+
+// ═══════════════════════════════════════════════════════
+// Log
+// ═══════════════════════════════════════════════════════
+const logArea=document.getElementById('logArea');
+function log(msg,cls=''){
   const d=document.createElement('div');
-  d.className=cls;
+  d.style.cssText='color:var(--text3);line-height:1.8';
+  if(cls) d.className=cls;
   d.textContent=`[${new Date().toLocaleTimeString('zh-CN',{hour12:false})}] ${msg}`;
   logArea.appendChild(d);
   logArea.scrollTop=logArea.scrollHeight;
 }
 function clearLog(){ logArea.innerHTML=''; }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function setTicker(t){ document.getElementById('tickerInput').value=t; }
+// ═══════════════════════════════════════════════════════
+// Helpers
+// ═══════════════════════════════════════════════════════
+function setTicker(tk){ document.getElementById('tickerInput').value=tk; }
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 function randn(){ const u=1-Math.random(),v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }
-function avg(arr){ return arr.reduce((a,b)=>a+b,0)/arr.length; }
-function median(arr){ const s=[...arr].sort((a,b)=>a-b),m=Math.floor(s.length/2); return s.length%2?s[m]:(s[m-1]+s[m])/2; }
+function avg(a){ return a.reduce((s,v)=>s+v,0)/a.length; }
+function median(a){ const s=[...a].sort((x,y)=>x-y),m=Math.floor(s.length/2); return s.length%2?s[m]:(s[m-1]+s[m])/2; }
 
-// ─── Technical Indicators ─────────────────────────────────────────────────────
-function calcRSI(closes,period=14){
-  const delta=closes.map((c,i)=>i===0?0:c-closes[i-1]);
-  const gain=delta.map(d=>d>0?d:0),loss=delta.map(d=>d<0?-d:0);
-  const rsi=new Array(closes.length).fill(null);
-  let avgG=gain.slice(1,period+1).reduce((a,b)=>a+b,0)/period;
-  let avgL=loss.slice(1,period+1).reduce((a,b)=>a+b,0)/period;
-  for(let i=period;i<closes.length;i++){
-    if(i>period){avgG=(avgG*(period-1)+gain[i])/period;avgL=(avgL*(period-1)+loss[i])/period;}
-    rsi[i]=avgL===0?100:100-(100/(1+avgG/avgL));
+// ═══════════════════════════════════════════════════════
+// Technical Indicators
+// ═══════════════════════════════════════════════════════
+function calcRSI(c,p=14){
+  const d=c.map((v,i)=>i?v-c[i-1]:0),g=d.map(v=>v>0?v:0),l=d.map(v=>v<0?-v:0);
+  const r=new Array(c.length).fill(null);
+  let ag=g.slice(1,p+1).reduce((s,v)=>s+v,0)/p,al=l.slice(1,p+1).reduce((s,v)=>s+v,0)/p;
+  for(let i=p;i<c.length;i++){
+    if(i>p){ag=(ag*(p-1)+g[i])/p;al=(al*(p-1)+l[i])/p;}
+    r[i]=al===0?100:100-(100/(1+ag/al));
   }
-  return rsi;
+  return r;
 }
-function calcEMA(arr,span){
-  const k=2/(span+1),ema=new Array(arr.length).fill(null);
-  let s=false;
-  for(let i=0;i<arr.length;i++){
-    if(arr[i]==null)continue;
-    if(!s){ema[i]=arr[i];s=true;continue;}
-    ema[i]=arr[i]*k+(ema[i-1]??arr[i])*(1-k);
-  }
-  return ema;
+function calcEMA(a,s){
+  const k=2/(s+1),e=new Array(a.length).fill(null);let started=false;
+  for(let i=0;i<a.length;i++){if(a[i]==null)continue;if(!started){e[i]=a[i];started=true;continue;}e[i]=a[i]*k+(e[i-1]??a[i])*(1-k);}
+  return e;
 }
-function calcMACD(closes){
-  const ema12=calcEMA(closes,12),ema26=calcEMA(closes,26);
-  const macd=closes.map((_,i)=>ema12[i]!=null&&ema26[i]!=null?ema12[i]-ema26[i]:null);
+function calcMACD(c){
+  const e12=calcEMA(c,12),e26=calcEMA(c,26);
+  const macd=c.map((_,i)=>e12[i]!=null&&e26[i]!=null?e12[i]-e26[i]:null);
   const sig=calcEMA(macd.filter(v=>v!=null),9);
-  const sigFull=new Array(closes.length).fill(null);
-  let si=0;
-  for(let i=0;i<closes.length;i++){if(macd[i]!=null)sigFull[i]=sig[si++];}
-  const hist=closes.map((_,i)=>macd[i]!=null&&sigFull[i]!=null?macd[i]-sigFull[i]:null);
-  return{macd,signal:sigFull,hist};
+  const sf=new Array(c.length).fill(null);let si=0;
+  for(let i=0;i<c.length;i++)if(macd[i]!=null)sf[i]=sig[si++];
+  const hist=c.map((_,i)=>macd[i]!=null&&sf[i]!=null?macd[i]-sf[i]:null);
+  return{macd,signal:sf,hist};
 }
-function calcBOLL(closes,period=20,mult=2){
-  const mid=new Array(closes.length).fill(null),up=new Array(closes.length).fill(null),dn=new Array(closes.length).fill(null);
-  for(let i=period-1;i<closes.length;i++){
-    const sl=closes.slice(i-period+1,i+1),m=sl.reduce((a,b)=>a+b,0)/period;
-    const s=Math.sqrt(sl.map(v=>(v-m)**2).reduce((a,b)=>a+b,0)/period);
-    mid[i]=m;up[i]=m+mult*s;dn[i]=m-mult*s;
+function calcBOLL(c,p=20,m=2){
+  const mid=new Array(c.length).fill(null),up=new Array(c.length).fill(null),dn=new Array(c.length).fill(null);
+  for(let i=p-1;i<c.length;i++){
+    const sl=c.slice(i-p+1,i+1),mv=sl.reduce((s,v)=>s+v,0)/p;
+    const sd=Math.sqrt(sl.map(v=>(v-mv)**2).reduce((s,v)=>s+v,0)/p);
+    mid[i]=mv;up[i]=mv+m*sd;dn[i]=mv-m*sd;
   }
   return{mid,up,dn};
 }
-function calcMA(closes,period){
-  return closes.map((_,i)=>i<period-1?null:closes.slice(i-period+1,i+1).reduce((a,b)=>a+b,0)/period);
-}
+function calcMA(c,p){ return c.map((_,i)=>i<p-1?null:c.slice(i-p+1,i+1).reduce((s,v)=>s+v,0)/p); }
 
-// ─── Yahoo Finance ────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// Yahoo Finance
+// ═══════════════════════════════════════════════════════
 async function fetchYahoo(ticker,days){
   const end=Math.floor(Date.now()/1000),start=end-(days+40)*86400;
   const url=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?period1=${start}&period2=${end}&interval=1d`;
   const proxy=`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
   const res=await fetch(proxy);
-  if(!res.ok)throw new Error(`HTTP ${res.status}`);
+  if(!res.ok) throw new Error(`HTTP ${res.status}`);
   const outer=await res.json();
   const data=JSON.parse(outer.contents);
-  if(!data.chart?.result?.[0])throw new Error(T('waiting'));
+  if(!data.chart?.result?.[0]) throw new Error('No data for '+ticker);
   const chart=data.chart.result[0],ts=chart.timestamp,q=chart.indicators.quote[0];
   const rows=[];
   for(let i=0;i<ts.length;i++){
@@ -413,26 +433,26 @@ async function fetchYahoo(ticker,days){
   return rows.slice(-days);
 }
 
-// ─── Kronos sim ───────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// Kronos Simulation
+// ═══════════════════════════════════════════════════════
 function simulateKronos(hist,predLen,samples,temperature){
   const closes=hist.map(d=>d.close);
   const bodies=hist.map(d=>Math.abs(d.close-d.open)),ranges=hist.map(d=>d.high-d.low);
-  const wr=bodies.map((b,i)=>b>0.001?ranges[i]/b:null).filter(Boolean);
-  const wickRatio=Math.max(1.5,Math.min(3.5,[...wr].sort((a,b)=>a-b)[Math.floor(wr.length/2)]));
-  const ret=[];
-  for(let i=1;i<closes.length;i++)ret.push((closes[i]-closes[i-1])/closes[i-1]);
-  const mu=ret.reduce((a,b)=>a+b,0)/ret.length;
-  const sig=Math.sqrt(ret.map(r=>(r-mu)**2).reduce((a,b)=>a+b,0)/ret.length);
-  const recS=ret.slice(-20).reduce((a,b)=>a+Math.abs(b),0)/Math.min(20,ret.length);
+  const wr=bodies.map((b,i)=>b>.001?ranges[i]/b:null).filter(Boolean);
+  const wickR=Math.max(1.5,Math.min(3.5,[...wr].sort((a,b)=>a-b)[Math.floor(wr.length/2)]));
+  const ret=[];for(let i=1;i<closes.length;i++)ret.push((closes[i]-closes[i-1])/closes[i-1]);
+  const mu=avg(ret),sig=Math.sqrt(ret.map(r=>(r-mu)**2).reduce((s,v)=>s+v,0)/ret.length);
+  const recS=ret.slice(-20).reduce((s,v)=>s+Math.abs(v),0)/Math.min(20,ret.length);
   const fut=[];let d=new Date(hist[hist.length-1].t);
-  while(fut.length<predLen){d=new Date(d.getTime()+86400000);if(d.getDay()!==0&&d.getDay()!==6)fut.push(new Date(d));}
+  while(fut.length<predLen){d=new Date(d.getTime()+86400000);if(d.getDay()&&d.getDay()<6)fut.push(new Date(d));}
   const allPaths=[];
   for(let s=0;s<samples;s++){
     const path=[];let prev=closes[closes.length-1];
     for(let i=0;i<predLen;i++){
-      const shock=randn()*recS*temperature*(1+i*0.015)+mu*0.25;
-      const o=prev*(1+randn()*sig*0.3*temperature),c=prev*(1+shock);
-      const body=Math.max(Math.abs(c-o),Math.abs(o)*0.002),maxW=body*(wickRatio-1)/2;
+      const shock=randn()*recS*temperature*(1+i*.015)+mu*.25;
+      const o=prev*(1+randn()*sig*.3*temperature),c=prev*(1+shock);
+      const body=Math.max(Math.abs(c-o),Math.abs(o)*.002),maxW=body*(wickR-1)/2;
       path.push({t:fut[i],open:o,high:Math.max(o,c)+maxW,low:Math.min(o,c)-maxW,close:c});
       prev=c;
     }
@@ -441,74 +461,80 @@ function simulateKronos(hist,predLen,samples,temperature){
   const pred=fut.map((dt,i)=>({t:dt,open:median(allPaths.map(p=>p[i].open)),high:median(allPaths.map(p=>p[i].high)),low:median(allPaths.map(p=>p[i].low)),close:median(allPaths.map(p=>p[i].close)),isPred:true}));
   const p25=fut.map((_,i)=>{const s=[...allPaths.map(p=>p[i].close)].sort((a,b)=>a-b);return s[Math.floor(s.length*.25)];});
   const p75=fut.map((_,i)=>{const s=[...allPaths.map(p=>p[i].close)].sort((a,b)=>a-b);return s[Math.floor(s.length*.75)];});
-  return{pred,allPaths,p25,p75};
+  return{pred,p25,p75};
 }
 
-// ─── Tech signals ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// Tech signals
+// ═══════════════════════════════════════════════════════
 function buildTechSignals(hist){
-  const closes=hist.map(d=>d.close);
-  const rsi=calcRSI(closes),lastRSI=rsi.filter(v=>v!=null).slice(-1)[0];
-  const{hist:mhist}=calcMACD(closes);
-  const lastH=mhist.filter(v=>v!=null).slice(-1)[0],prevH=mhist.filter(v=>v!=null).slice(-4,-1);
-  const macdTrend=lastH>avg(prevH)?'bull':'bear';
-  const ma5=calcMA(closes,5).slice(-1)[0],ma20=calcMA(closes,20).slice(-1)[0];
-  const maTrend=ma5>ma20?'bull':'bear';
-  const{up,dn}=calcBOLL(closes);
-  const lc=closes.slice(-1)[0];
-  const bollStat=lc>(up.filter(v=>v!=null).slice(-1)[0]||Infinity)?'overbought':lc<(dn.filter(v=>v!=null).slice(-1)[0]||0)?'oversold':'neutral';
-  return{rsi:lastRSI,macdTrend,maTrend,bollStat};
+  const c=hist.map(d=>d.close),rsi=calcRSI(c),lr=rsi.filter(v=>v!=null).slice(-1)[0];
+  const{hist:mh}=calcMACD(c),lh=mh.filter(v=>v!=null).slice(-1)[0],ph=mh.filter(v=>v!=null).slice(-4,-1);
+  const macdT=lh>avg(ph)?'bull':'bear';
+  const ma5=calcMA(c,5).slice(-1)[0],ma20=calcMA(c,20).slice(-1)[0],maT=ma5>ma20?'bull':'bear';
+  const{up,dn}=calcBOLL(c),lc=c.slice(-1)[0];
+  const bs=lc>(up.filter(v=>v!=null).slice(-1)[0]||Infinity)?'ob':lc<(dn.filter(v=>v!=null).slice(-1)[0]||0)?'os':'neu';
+  return{rsi:lr,macdT,maT,bs};
 }
 function updateSignalPills(sig){
   const re=document.getElementById('sigRSI'),me=document.getElementById('sigMACD'),mae=document.getElementById('sigMA');
   re.textContent=`RSI ${sig.rsi.toFixed(0)}`;
-  re.className=sig.rsi>70?'signal-pill sig-bull':sig.rsi<30?'signal-pill sig-bear':'signal-pill sig-neutral';
-  me.textContent=`MACD ${sig.macdTrend==='bull'?'↑':'↓'}`;
-  me.className=`signal-pill sig-${sig.macdTrend==='bull'?'bull':'bear'}`;
-  mae.textContent=`MA ${sig.maTrend==='bull'?'↑':'↓'}`;
-  mae.className=`signal-pill sig-${sig.maTrend==='bull'?'bull':'bear'}`;
+  re.className=sig.rsi>70?'signal-pill sig-bull':sig.rsi<30?'signal-pill sig-bear':'signal-pill sig-n';
+  me.textContent=`MACD ${sig.macdT==='bull'?'↑':'↓'}`;
+  me.className=`signal-pill sig-${sig.macdT==='bull'?'bull':'bear'}`;
+  mae.textContent=`MA ${sig.maT==='bull'?'↑':'↓'}`;
+  mae.className=`signal-pill sig-${sig.maT==='bull'?'bull':'bear'}`;
 }
 function renderTechGrid(sig){
-  const tl=curLang==='ja'?{ob:'買われ過ぎ',os:'売られ過ぎ',neu:'中立',bull:'強気',bear:'弱気'}
-            :curLang==='en'?{ob:'Overbought',os:'Oversold',neu:'Neutral',bull:'Bull',bear:'Bear'}
-            :{ob:'超买',os:'超卖',neu:'中性',bull:'多头',bear:'空头'};
   const items=[
-    {label:'RSI(14)',val:sig.rsi.toFixed(1),cls:sig.rsi>70?'stat-val-up':sig.rsi<30?'stat-val-dn':'stat-val-n'},
-    {label:'MACD',val:sig.macdTrend==='bull'?`↑${tl.bull}`:`↓${tl.bear}`,cls:sig.macdTrend==='bull'?'stat-val-up':'stat-val-dn'},
-    {label:'BOLL',val:sig.bollStat==='overbought'?tl.ob:sig.bollStat==='oversold'?tl.os:tl.neu,cls:sig.bollStat==='overbought'?'stat-val-up':sig.bollStat==='oversold'?'stat-val-dn':'stat-val-n'},
-    {label:'MA',val:sig.maTrend==='bull'?tl.bull:tl.bear,cls:sig.maTrend==='bull'?'stat-val-up':'stat-val-dn'},
+    {label:'RSI(14)',val:sig.rsi.toFixed(1),cls:sig.rsi>70?'sv-up':sig.rsi<30?'sv-dn':'sv-n'},
+    {label:'MACD',val:(sig.macdT==='bull'?'↑':' ↓')+t(sig.macdT),cls:sig.macdT==='bull'?'sv-up':'sv-dn'},
+    {label:'BOLL',val:t(sig.bs),cls:sig.bs==='ob'?'sv-up':sig.bs==='os'?'sv-dn':'sv-n'},
+    {label:'MA',val:t(sig.maT),cls:sig.maT==='bull'?'sv-up':'sv-dn'},
   ];
   document.getElementById('techGrid').innerHTML=items.map(it=>`<div class="tech-card"><div class="tech-card-title">${it.label}</div><div class="tech-card-val ${it.cls}">${it.val}</div></div>`).join('');
   document.getElementById('techSection').style.display='block';
 }
 
-// ─── Server ───────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// Server
+// ═══════════════════════════════════════════════════════
 const API='http://localhost:5000';
 let serverOnline=false;
-async function checkServer(){
-  try{const r=await fetch(`${API}/api/health`,{signal:AbortSignal.timeout(1500)});const d=await r.json();serverOnline=d.status==='ok';}
-  catch{serverOnline=false;}
+function updateServerLed(){
   const led=document.getElementById('statusLed');
-  if(serverOnline){led.style.background='#27ae60';led.style.boxShadow='0 0 6px #27ae60';}
-  else{led.style.background='#e74c3c';led.style.boxShadow='0 0 6px #e74c3c';}
+  led.style.background=serverOnline?'#27ae60':'#e74c3c';
+  led.style.boxShadow=`0 0 6px ${serverOnline?'#27ae60':'#e74c3c'}`;
 }
-async function fetchRealPrediction(ticker,period,predLen,samples,temp){
+async function checkServer(){
+  try{const r=await fetch(`${API}/api/health`,{signal:AbortSignal.timeout(1500)});serverOnline=(await r.json()).status==='ok';}
+  catch{serverOnline=false;}
+  updateServerLed();
+}
+async function fetchRealPred(ticker,period,predLen,samples,temp){
   const r=await fetch(`${API}/api/predict`,{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ticker,period,pred_len:predLen,model_size:'base',samples,temperature:temp,top_p:0.9}),
+    body:JSON.stringify({ticker,period,pred_len:predLen,model_size:'base',samples,temperature:temp,top_p:.9}),
     signal:AbortSignal.timeout(120000)});
-  const d=await r.json();
-  if(!d.ok)throw new Error(d.error);
-  const hist=d.hist.map(row=>({t:new Date(row.timestamps),open:row.open,high:row.high,low:row.low,close:row.close,volume:row.volume||0}));
-  const pred=d.pred.map(row=>({t:new Date(row.timestamps),open:row.open,high:row.high,low:row.low,close:row.close,isPred:true}));
-  return{hist,pred,meta:d.meta};
+  const d=await r.json();if(!d.ok)throw new Error(d.error);
+  return{
+    hist:d.hist.map(row=>({t:new Date(row.timestamps),open:row.open,high:row.high,low:row.low,close:row.close,volume:row.volume||0})),
+    pred:d.pred.map(row=>({t:new Date(row.timestamps),open:row.open,high:row.high,low:row.low,close:row.close,isPred:true})),
+    meta:d.meta,
+  };
 }
 checkServer();
 setInterval(checkServer,10000);
 
-// ─── Chart zoom/pan ───────────────────────────────────────────────────────────
-let dragMode=false; // false=zoom, true=pan
+// ═══════════════════════════════════════════════════════
+// Chart zoom/pan
+// ═══════════════════════════════════════════════════════
+let dragMode=false;
+let kChart=null,macdCh=null,rsiCh=null,volCh=null;
+let _allDates=[],_ohlc=[],_nHist=0;
+
 function toggleMode(){
   dragMode=!dragMode;
-  document.getElementById('btnMode').textContent=dragMode?T('zoom_mode'):T('drag_mode');
+  document.getElementById('btnMode').textContent=dragMode?t('mode_zoom'):t('mode_pan');
   [kChart,macdCh,rsiCh].forEach(c=>{
     if(!c)return;
     c.options.plugins.zoom.zoom.drag.enabled=!dragMode;
@@ -516,14 +542,13 @@ function toggleMode(){
     c.update('none');
   });
 }
-function zoomIn(){  [kChart,macdCh,rsiCh].forEach(c=>c&&c.zoom(1.3)); }
-function zoomOut(){ [kChart,macdCh,rsiCh].forEach(c=>c&&c.zoom(0.77)); }
-function resetZoom(){ [kChart,macdCh,rsiCh,volCh].forEach(c=>c&&c.resetZoom()); }
+function zoomIn(){[kChart,macdCh,rsiCh].forEach(c=>c&&c.zoom(1.3));}
+function zoomOut(){[kChart,macdCh,rsiCh].forEach(c=>c&&c.zoom(.77));}
+function resetZoom(){[kChart,macdCh,rsiCh,volCh].forEach(c=>c&&c.resetZoom());}
 
-// ─── Charts ───────────────────────────────────────────────────────────────────
-let kChart=null,macdCh=null,rsiCh=null,volCh=null;
-let _allDates=[],_ohlcData=[],_nHist=0;
-
+// ═══════════════════════════════════════════════════════
+// Candlestick plugin
+// ═══════════════════════════════════════════════════════
 const csPlugin={
   id:'cs',
   afterDatasetsDraw(chart){
@@ -531,27 +556,20 @@ const csPlugin={
     const ds=chart.data.datasets[0];
     if(!ds||!ds._isOHLC)return;
     ds.data.forEach((d,i)=>{
-      if(d==null)return;
+      if(!d)return;
       const xi=x.getPixelForValue(i);
-      if(xi<x.left||xi>x.right)return;
+      if(xi<x.left-2||xi>x.right+2)return;
       const yO=y.getPixelForValue(d.o),yH=y.getPixelForValue(d.h),yL=y.getPixelForValue(d.l),yC=y.getPixelForValue(d.c);
-      const up=d.c>=d.o;
-      const col=d.isPred?(up?'#e74c3c':'#27ae60'):(up?'#c0392b':'#1e8449');
-      const bw=Math.max(2,(chart.scales.x.width/ds.data.length)*0.6);
+      const up=d.c>=d.o,col=d.isPred?(up?'#e74c3c':'#27ae60'):(up?'#c0392b':'#1e8449');
+      const bw=Math.max(2,(x.width/ds.data.length)*.6);
       ctx.save();
-      ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=1;
-      ctx.globalAlpha=d.isPred?.88:1;
+      ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=1;ctx.globalAlpha=d.isPred?.88:1;
       ctx.beginPath();ctx.moveTo(xi,yH);ctx.lineTo(xi,yL);ctx.stroke();
       ctx.fillRect(xi-bw/2,Math.min(yO,yC),bw,Math.max(1,Math.abs(yO-yC)));
-      // Highlight predicted candles with subtle glow
-      if(d.isPred){
-        ctx.globalAlpha=.12;
-        ctx.fillStyle=up?'#e74c3c':'#27ae60';
-        ctx.fillRect(xi-bw,Math.min(yO,yC)-2,bw*2,Math.max(1,Math.abs(yO-yC))+4);
-      }
+      if(d.isPred){ctx.globalAlpha=.1;ctx.fillRect(xi-bw,Math.min(yO,yC)-1,bw*2,Math.max(1,Math.abs(yO-yC))+2);}
       ctx.restore();
     });
-    // Draw split line
+    // Split line
     if(chart._splitAt!=null){
       const sx=x.getPixelForValue(chart._splitAt-.5);
       if(sx>=x.left&&sx<=x.right){
@@ -564,40 +582,50 @@ const csPlugin={
 };
 Chart.register(csPlugin);
 
-const zoomCfg={
-  zoom:{wheel:{enabled:true},pinch:{enabled:true},drag:{enabled:true,backgroundColor:'rgba(243,156,18,0.06)',borderColor:'rgba(243,156,18,0.4)',borderWidth:1},mode:'x'},
-  pan:{enabled:false,mode:'x'},
-  limits:{x:{minRange:5}},
+const zoomPlugin={
+  zoom:{wheel:{enabled:true},pinch:{enabled:true},drag:{enabled:true,backgroundColor:'rgba(243,156,18,.06)',borderColor:'rgba(243,156,18,.4)',borderWidth:1},mode:'x'},
+  pan:{enabled:false,mode:'x'},limits:{x:{minRange:5}},
 };
 
-function destroyAll(){ [kChart,macdCh,rsiCh,volCh].forEach(c=>{if(c)c.destroy();}); kChart=macdCh=rsiCh=volCh=null; }
+function destroyAll(){[kChart,macdCh,rsiCh,volCh].forEach(c=>{if(c)c.destroy();});kChart=macdCh=rsiCh=volCh=null;}
 
-function mkScaleX(display=true){
-  return{grid:{color:'#1a2028',lineWidth:.5},ticks:{color:'#4a5568',font:{family:'IBM Plex Mono',size:9},display,callback:(_,i)=>{if(i>=_allDates.length||i%Math.max(1,Math.floor(_allDates.length/14))!==0)return'';const d=_allDates[i];return`${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`;}},border:{color:'#1e2830'}};
+function mkX(display=true){
+  return{grid:{color:'#1a2028',lineWidth:.5},
+    ticks:{color:'#4a5568',font:{family:'IBM Plex Mono',size:9},display,
+      callback:(_,i)=>{if(i>=_allDates.length||i%Math.max(1,Math.floor(_allDates.length/14))!==0)return'';const d=_allDates[i];return`${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`;}},
+    border:{color:'#1e2830'}};
 }
-function mkScaleY(){
-  return{position:'right',grid:{color:'#1a2028',lineWidth:.5},ticks:{color:'#4a5568',font:{family:'IBM Plex Mono',size:9},callback:v=>v.toFixed(2)},border:{color:'#1e2830'}};
+function mkY(cb=v=>v.toFixed(2)){
+  return{position:'right',grid:{color:'#1a2028',lineWidth:.5},ticks:{color:'#4a5568',font:{family:'IBM Plex Mono',size:9},callback:cb},border:{color:'#1e2830'}};
+}
+
+function syncSub(){
+  if(!kChart)return;
+  const{min,max}=kChart.scales.x;
+  [macdCh,rsiCh].forEach(c=>{if(!c)return;c.scales.x.options.min=min;c.scales.x.options.max=max;c.update('none');});
 }
 
 function renderCharts(ticker,hist,pred,p25,p75){
   destroyAll();
   document.getElementById('emptyState').style.display='none';
-  document.getElementById('predBadge').classList.add('show');
+  document.getElementById('predBadge').style.display='block';
 
   const n=hist.length,np=pred.length,total=n+np;
   _allDates=[...hist.map(d=>d.t),...pred.map(d=>d.t)];
   _nHist=n;
   const xAll=Array.from({length:total},(_,i)=>i);
-  _ohlcData=[...hist.map(d=>({o:d.open,h:d.high,l:d.low,c:d.close,isPred:false})),...pred.map(d=>({o:d.open,h:d.high,l:d.low,c:d.close,isPred:true}))];
+  _ohlc=[...hist.map(d=>({o:d.open,h:d.high,l:d.low,c:d.close,isPred:false})),...pred.map(d=>({o:d.open,h:d.high,l:d.low,c:d.close,isPred:true}))];
 
-  const closes=hist.map(d=>d.close),allCloses=[...closes,...pred.map(d=>d.close)];
-  const ma5=calcMA(allCloses,5),ma20=calcMA(allCloses,20),ma60=calcMA(allCloses,60),boll=calcBOLL(closes);
+  const closes=hist.map(d=>d.close),allC=[...closes,...pred.map(d=>d.close)];
+  const ma5=calcMA(allC,5),ma20=calcMA(allC,20),ma60=calcMA(allC,60),boll=calcBOLL(closes);
   const ciLo=Array(n).fill(null).concat(p25),ciHi=Array(n).fill(null).concat(p75);
+
+  const BASE={responsive:true,maintainAspectRatio:false,animation:{duration:400,easing:'easeOutQuart'},plugins:{legend:{display:false}}};
 
   kChart=new Chart(document.getElementById('klineChart'),{
     type:'bar',
     data:{labels:xAll,datasets:[
-      {_isOHLC:true,data:_ohlcData,label:'OHLC',backgroundColor:'transparent',borderWidth:0},
+      {_isOHLC:true,data:_ohlc,label:'OHLC',backgroundColor:'transparent',borderWidth:0},
       {type:'line',data:ciHi,fill:'+1',backgroundColor:'rgba(41,128,185,.06)',borderWidth:0,pointRadius:0,spanGaps:false},
       {type:'line',data:ciLo,fill:false,borderColor:'rgba(41,128,185,.15)',borderWidth:1,borderDash:[2,3],pointRadius:0,spanGaps:false},
       {type:'line',data:ma5,borderColor:'#f39c12',borderWidth:.9,pointRadius:0,spanGaps:false,label:'MA5'},
@@ -605,120 +633,110 @@ function renderCharts(ticker,hist,pred,p25,p75){
       {type:'line',data:ma60,borderColor:'#9b59b6',borderWidth:.9,pointRadius:0,spanGaps:false,label:'MA60'},
       {type:'line',data:[...boll.up,...Array(np).fill(null)],borderColor:'rgba(155,89,182,.4)',borderWidth:.8,borderDash:[3,3],pointRadius:0,spanGaps:false},
       {type:'line',data:[...boll.dn,...Array(np).fill(null)],borderColor:'rgba(155,89,182,.4)',borderWidth:.8,borderDash:[3,3],pointRadius:0,spanGaps:false},
-      {type:'line',data:Array(n).fill(null).concat(pred.map(d=>d.close)),borderColor:'rgba(241,196,15,.6)',borderWidth:1.5,borderDash:[5,3],pointRadius:3,pointBackgroundColor:'rgba(241,196,15,.8)',pointBorderWidth:0,spanGaps:false},
+      // Predicted close line — clearly visible
+      {type:'line',data:Array(n).fill(null).concat(pred.map(d=>d.close)),
+        borderColor:'rgba(243,156,18,.9)',borderWidth:2,borderDash:[5,3],
+        pointRadius:4,pointBackgroundColor:'rgba(243,156,18,1)',pointBorderColor:'#000',pointBorderWidth:1,
+        spanGaps:false,label:'Kronos'},
     ]},
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      animation:{duration:400,easing:'easeOutQuart'},
-      plugins:{
-        legend:{display:false},
-        zoom:zoomCfg,
-        tooltip:{
-          enabled:true,mode:'index',intersect:false,
+    options:{...BASE,
+      plugins:{...BASE.plugins,zoom:zoomPlugin,
+        tooltip:{enabled:true,mode:'index',intersect:false,
           callbacks:{
-            title:ctx=>{const i=ctx[0].dataIndex;return _allDates[i]?.toLocaleDateString()+'  '+(i>=n?`[${T('forecast')}]`:'');},
+            title:ctx=>{const i=ctx[0].dataIndex;return _allDates[i]?.toLocaleDateString()+(i>=n?`  [${t('forecast')}]`:'');},
             label:ctx=>{
-              if(ctx.dataset._isOHLC){const d=_ohlcData[ctx.dataIndex];if(!d)return null;return[`O:${d.o.toFixed(2)} H:${d.h.toFixed(2)} L:${d.l.toFixed(2)} C:${d.c.toFixed(2)}`];}
-              if(ctx.dataset.label&&['MA5','MA20','MA60'].includes(ctx.dataset.label)&&ctx.raw!=null)return`${ctx.dataset.label}: ${ctx.raw.toFixed(2)}`;
+              if(ctx.dataset._isOHLC){const d=_ohlc[ctx.dataIndex];if(!d)return null;return `O:${d.o.toFixed(2)}  H:${d.h.toFixed(2)}  L:${d.l.toFixed(2)}  C:${d.c.toFixed(2)}`;}
+              if(['MA5','MA20','MA60','Kronos'].includes(ctx.dataset.label)&&ctx.raw!=null)return`${ctx.dataset.label}: ${ctx.raw.toFixed(2)}`;
               return null;
             },
           },
-          filter:item=>item.datasetIndex===0||['MA5','MA20','MA60'].includes(item.dataset.label),
+          filter:item=>item.datasetIndex===0||['MA5','MA20','MA60','Kronos'].includes(item.dataset.label),
           backgroundColor:'rgba(14,18,22,.96)',borderColor:'#263040',borderWidth:1,
           titleColor:'#ecf0f1',bodyColor:'#7f8c8d',
           titleFont:{family:'IBM Plex Mono',size:11},bodyFont:{family:'IBM Plex Mono',size:10},
         },
       },
-      scales:{x:mkScaleX(false),y:mkScaleY()},
-      onHover:(event,elements,chart)=>{
-        const tt=document.getElementById('tooltip');
-        if(!elements.length){tt.classList.remove('show');return;}
-        const i=elements[0].index;
-        if(i>=_allDates.length){tt.classList.remove('show');return;}
-        const d=_ohlcData[i],dt=_allDates[i];
-        if(!d){tt.classList.remove('show');return;}
-        const isPred=i>=n;
-        tt.innerHTML=`<span style="color:var(--text3)">${dt.toLocaleDateString()}</span>${isPred?` <span style="color:var(--acc)">[${T('forecast')}]</span>`:''}<br><span style="color:var(--up2)">O</span> ${d.o.toFixed(2)}  <span style="color:var(--up2)">H</span> ${d.h.toFixed(2)}  <span style="color:var(--dn2)">L</span> ${d.l.toFixed(2)}  <span style="color:var(--text0)">C</span> ${d.c.toFixed(2)}`;
-        tt.classList.add('show');
-      },
+      scales:{x:mkX(false),y:mkY()},
     },
   });
   kChart._splitAt=n;
-  // Sync zoom across sub-charts
-  kChart.options.plugins.zoom.zoom.onZoom=()=>syncSubChartRange();
-  kChart.options.plugins.zoom.pan.onPan=()=>syncSubChartRange();
+  kChart.options.plugins.zoom.zoom.onZoom=syncSub;
+  kChart.options.plugins.zoom.pan.onPan=syncSub;
 
   // MACD
-  const{macd,signal:macdSig,hist:macdH}=calcMACD(closes);
-  const extMACD=[...macd,...Array(np).fill(null)],extSig=[...macdSig,...Array(np).fill(null)],extH=[...macdH,...Array(np).fill(null)];
+  const{macd,signal:ms,hist:mh}=calcMACD(closes);
   macdCh=new Chart(document.getElementById('macdChart'),{
     type:'bar',
     data:{labels:xAll,datasets:[
-      {type:'line',data:extMACD,borderColor:'#f39c12',borderWidth:.9,pointRadius:0,spanGaps:false},
-      {type:'line',data:extSig,borderColor:'#3498db',borderWidth:.9,pointRadius:0,spanGaps:false},
-      {type:'bar',data:extH,backgroundColor:extH.map(v=>v==null?'transparent':v>=0?'rgba(192,57,43,.7)':'rgba(39,174,96,.7)'),borderWidth:0,barPercentage:.8},
+      {type:'line',data:[...macd,...Array(np).fill(null)],borderColor:'#f39c12',borderWidth:.9,pointRadius:0,spanGaps:false},
+      {type:'line',data:[...ms,...Array(np).fill(null)],borderColor:'#3498db',borderWidth:.9,pointRadius:0,spanGaps:false},
+      {data:[...mh,...Array(np).fill(null)],backgroundColor:mh.map(v=>v==null?'transparent':v>=0?'rgba(192,57,43,.7)':'rgba(39,174,96,.7)'),borderWidth:0,barPercentage:.8},
     ]},
-    options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},plugins:{legend:{display:false},zoom:zoomCfg},scales:{x:mkScaleX(false),y:{...mkScaleY(),ticks:{...mkScaleY().ticks,callback:v=>v.toFixed(1),maxTicksLimit:4}}}},
+    options:{...BASE,plugins:{...BASE.plugins,zoom:zoomPlugin},scales:{x:mkX(false),y:mkY(v=>v.toFixed(1))}},
   });
 
   // RSI
-  const rsi=calcRSI(closes),extRSI=[...rsi,...Array(np).fill(null)];
+  const rsi=calcRSI(closes);
   rsiCh=new Chart(document.getElementById('rsiChart'),{
     type:'line',
     data:{labels:xAll,datasets:[
-      {data:extRSI,borderColor:'#e67e22',borderWidth:1,pointRadius:0,spanGaps:false,fill:false},
+      {data:[...rsi,...Array(np).fill(null)],borderColor:'#e67e22',borderWidth:1,pointRadius:0,spanGaps:false,fill:false},
       {data:Array(total).fill(70),borderColor:'rgba(192,57,43,.3)',borderWidth:.7,borderDash:[3,3],pointRadius:0},
       {data:Array(total).fill(30),borderColor:'rgba(39,174,96,.3)',borderWidth:.7,borderDash:[3,3],pointRadius:0},
       {data:Array(total).fill(50),borderColor:'rgba(74,85,104,.3)',borderWidth:.5,pointRadius:0},
     ]},
-    options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},plugins:{legend:{display:false},zoom:zoomCfg},scales:{x:mkScaleX(true),y:{...mkScaleY(),min:0,max:100,ticks:{...mkScaleY().ticks,callback:v=>v,maxTicksLimit:5}}}},
+    options:{...BASE,plugins:{...BASE.plugins,zoom:zoomPlugin},scales:{x:mkX(true),y:{...mkY(v=>v),min:0,max:100}}},
   });
 
   // Volume
   volCh=new Chart(document.getElementById('volChart'),{
     type:'bar',
     data:{labels:xAll.slice(0,n),datasets:[{data:hist.map(d=>d.volume),backgroundColor:hist.map(d=>d.close>=d.open?'rgba(192,57,43,.7)':'rgba(39,174,96,.7)'),borderWidth:0,barPercentage:.8}]},
-    options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},plugins:{legend:{display:false}},scales:{x:mkScaleX(false),y:{...mkScaleY(),ticks:{...mkScaleY().ticks,maxTicksLimit:3,callback:v=>v>=1e9?`${(v/1e9).toFixed(1)}B`:v>=1e6?`${(v/1e6).toFixed(0)}M`:`${(v/1e3).toFixed(0)}K`}}}},
+    options:{...BASE,scales:{x:mkX(false),y:mkY(v=>v>=1e9?`${(v/1e9).toFixed(1)}B`:v>=1e6?`${(v/1e6).toFixed(0)}M`:`${(v/1e3).toFixed(0)}K`)}},
   });
 }
 
-function syncSubChartRange(){
-  if(!kChart)return;
-  const{min,max}=kChart.scales.x;
-  [macdCh,rsiCh].forEach(c=>{if(!c)return;c.scales.x.options.min=min;c.scales.x.options.max=max;c.update('none');});
-}
-
-// Double click to reset
+// Double click reset
 document.getElementById('klineChart').addEventListener('dblclick',resetZoom);
 
-// ─── Stats ────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// Stats panel
+// ═══════════════════════════════════════════════════════
 function renderStats(ticker,hist,pred){
   const last=hist[hist.length-1].close,pEnd=pred[pred.length-1].close,chg=(pEnd-last)/last*100;
   const hi52=Math.max(...hist.map(d=>d.high)),lo52=Math.min(...hist.map(d=>d.low));
-  const vol30=hist.slice(-30).reduce((a,d)=>a+d.volume,0)/30;
+  const vol30=hist.slice(-30).reduce((s,d)=>s+d.volume,0)/30;
   const predHi=Math.max(...pred.map(d=>d.high)),predLo=Math.min(...pred.map(d=>d.low));
-  const arrow=chg>=0?'▲':'▼',cls=chg>=0?'stat-val-up':'stat-val-dn';
+  const arrow=chg>=0?'▲':'▼',cls=chg>=0?'sv-up':'sv-dn';
   document.getElementById('hdrTicker').textContent=ticker.toUpperCase();
   document.getElementById('hdrPrice').textContent=last.toFixed(2);
   const hc=document.getElementById('hdrChg');hc.textContent=`${arrow} ${Math.abs(chg).toFixed(2)}%`;hc.className=`price-chg ${chg>=0?'up':'dn'}`;
-  const rows=[[T('cur_price'),last.toFixed(2),'stat-val-n'],[T('pred_end'),pEnd.toFixed(2),cls],[T('pred_chg'),`${arrow}${Math.abs(chg).toFixed(2)}%`,cls],[T('pred_hi'),predHi.toFixed(2),'stat-val-up'],[T('pred_lo'),predLo.toFixed(2),'stat-val-dn'],[T('hist_hi'),hi52.toFixed(2),'stat-val-n'],[T('hist_lo'),lo52.toFixed(2),'stat-val-n'],[T('avg_vol'),vol30>=1e6?`${(vol30/1e6).toFixed(1)}M`:`${(vol30/1e3).toFixed(0)}K`,'stat-val-n']];
+  const rows=[
+    [t('cur'),last.toFixed(2),'sv-n'],[t('pred_end'),pEnd.toFixed(2),cls],[t('chg'),`${arrow}${Math.abs(chg).toFixed(2)}%`,cls],
+    [t('phi'),predHi.toFixed(2),'sv-up'],[t('plo'),predLo.toFixed(2),'sv-dn'],
+    [t('hhi'),hi52.toFixed(2),'sv-n'],[t('hlo'),lo52.toFixed(2),'sv-n'],
+    [t('vol'),vol30>=1e6?`${(vol30/1e6).toFixed(1)}M`:`${(vol30/1e3).toFixed(0)}K`,'sv-n'],
+  ];
   document.getElementById('statsTable').innerHTML=rows.map(([k,v,c])=>`<div class="stat-row"><span class="stat-key">${k}</span><span class="${c}">${v}</span></div>`).join('');
   document.getElementById('statsSection').style.display='block';
 }
 
-// ─── Loading ──────────────────────────────────────────────────────────────────
-const STEPS_ZH=['连接 Yahoo Finance...','下载历史K线...','初始化模型...','分词处理...','自回归推理...','蒙特卡洛采样...','影线裁剪...','计算指标...','渲染图表...'];
-const STEPS_EN=['Connecting Yahoo Finance...','Downloading K-lines...','Loading model...','Tokenizing...','Autoregressive inference...','Monte Carlo sampling...','Clipping wicks...','Computing indicators...','Rendering charts...'];
-const STEPS_JA=['Yahoo Finance 接続中...','K線データ取得中...','モデル初期化中...','トークン処理中...','自己回帰推論中...','モンテカルロ...','ヒゲカット処理...','指標計算中...','チャート描画中...'];
-function getSteps(){return curLang==='en'?STEPS_EN:curLang==='ja'?STEPS_JA:STEPS_ZH;}
-
+// ═══════════════════════════════════════════════════════
+// Loading animation
+// ═══════════════════════════════════════════════════════
 async function animateLoading(total_ms){
   const bar=document.getElementById('loadingBar'),step=document.getElementById('loadingStep');
-  const steps=getSteps(),each=total_ms/steps.length;
-  for(let i=0;i<steps.length;i++){step.textContent=steps[i];bar.style.width=`${((i+1)/steps.length*100).toFixed(0)}%`;await sleep(each+Math.random()*80);}
+  const steps=t('steps'),each=total_ms/steps.length;
+  for(let i=0;i<steps.length;i++){
+    step.textContent=steps[i];
+    bar.style.width=`${((i+1)/steps.length*100).toFixed(0)}%`;
+    await sleep(each+Math.random()*80);
+  }
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+// Main run
+// ═══════════════════════════════════════════════════════
 async function runKronos(){
   const ticker=document.getElementById('tickerInput').value.trim().toUpperCase();
   const period=parseInt(document.getElementById('sliderPeriod').value);
@@ -731,20 +749,20 @@ async function runKronos(){
   document.getElementById('runBtn').disabled=true;
   document.getElementById('loadingOverlay').classList.add('show');
   document.getElementById('loadingBar').style.width='0%';
-  document.getElementById('chartMeta').textContent=`Kronos-base · samples=${samples} · T=${temp.toFixed(2)} · ${serverOnline?'CUDA':'sim'}`;
-  const loadP=animateLoading(serverOnline?3500:1800);
+  document.getElementById('chartMeta').textContent=`Kronos-base · samples=${samples} · T=${temp.toFixed(2)} · ${serverOnline?'GPU':'sim'}`;
+  const loadP=animateLoading(serverOnline?3800:1600);
   try{
     let hist,pred,p25=[],p75=[];
     if(serverOnline){
-      log('🤖 Kronos server → real model','log-info');
-      const r=await fetchRealPrediction(ticker,period,predLen,samples,temp);
+      log(t('server_on'),'log-ok');
+      const r=await fetchRealPred(ticker,period,predLen,samples,temp);
       hist=r.hist;pred=r.pred;
       log(`✅ ${hist.length}d · ${r.meta.model} · ${r.meta.device}`,'log-ok');
     }else{
-      log('📡 Yahoo Finance (demo)...');
+      log(t('server_off'),'log-warn');
+      log(t('server_hint'),'log-warn');
       hist=await fetchYahoo(ticker,period);
       log(`✅ ${hist.length}d`,'log-ok');
-      log('🎭 simulation...');
       await sleep(200);
       const sim=simulateKronos(hist,predLen,samples,temp);
       pred=sim.pred;p25=sim.p25;p75=sim.p75;
@@ -756,7 +774,7 @@ async function runKronos(){
     updateSignalPills(sig);
     renderTechGrid(sig);
     const last=hist[hist.length-1].close,pEnd=pred[pred.length-1].close,chg=(pEnd-last)/last*100;
-    log(`🎯 ${last.toFixed(2)} → ${pEnd.toFixed(2)} (${chg>0?'+':''}${chg.toFixed(2)}%)`,chg>0?'log-warn':'log-ok');
+    log(`🎯 ${last.toFixed(2)} → ${pEnd.toFixed(2)} (${chg>=0?'+':''}${chg.toFixed(2)}%)`,chg>=0?'log-warn':'log-ok');
     log('✅ Done','log-ok');
   }catch(err){
     log(`❌ ${err.message}`,'log-err');
@@ -768,6 +786,8 @@ async function runKronos(){
 }
 
 document.getElementById('tickerInput').addEventListener('keydown',e=>{if(e.key==='Enter')runKronos();});
+
+// Init
 applyLang();
 </script>
 </body>
