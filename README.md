@@ -1,3 +1,7 @@
+<img width="1887" height="909" alt="image" src="https://github.com/user-attachments/assets/627f41be-4575-48ce-bc5e-12a056946bff" />
+<img width="1662" height="813" alt="image" src="https://github.com/user-attachments/assets/b18d2ea9-cdda-4df6-89ec-4db2c02f98c1" />
+
+
 <div align="center">
 
 <img src="figures/logo.png" width="120" alt="KRONOS Logo"/>
