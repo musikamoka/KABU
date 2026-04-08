@@ -1,19 +1,23 @@
-<img width="1887" height="909" alt="image" src="https://github.com/user-attachments/assets/627f41be-4575-48ce-bc5e-12a056946bff" />
-<img width="1662" height="813" alt="image" src="https://github.com/user-attachments/assets/b18d2ea9-cdda-4df6-89ec-4db2c02f98c1" />
-
-
 <div align="center">
 
-<img src="figures/logo.png" width="120" alt="KRONOS Logo"/>
+```
+██╗  ██╗██████╗  ██████╗ ███╗   ██╗ ██████╗ ███████╗
+██║ ██╔╝██╔══██╗██╔═══██╗████╗  ██║██╔═══██╗██╔════╝
+█████╔╝ ██████╔╝██║   ██║██╔██╗ ██║██║   ██║███████╗
+██╔═██╗ ██╔══██╗██║   ██║██║╚██╗██║██║   ██║╚════██║
+██║  ██╗██║  ██║╚██████╔╝██║ ╚████║╚██████╔╝███████║
+╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝ ╚═════╝ ╚══════╝
+```
 
-# KRONOS Terminal
+**KRONOS Market Intelligence**
 
-**A professional K-line forecasting terminal powered by the Kronos Foundation Model**
+AI-powered stock & forex candlestick forecasting system
 
-[![Model](https://img.shields.io/badge/Model-Kronos--base%20102.3M-f39c12?style=flat-square)](https://huggingface.co/NeoQuasar/Kronos-base)
-[![Python](https://img.shields.io/badge/Python-3.10+-3498db?style=flat-square)](https://www.python.org)
-[![License](https://img.shields.io/badge/License-MIT-2ecc71?style=flat-square)](LICENSE)
-[![AAAI](https://img.shields.io/badge/AAAI-2026-e74c3c?style=flat-square)](https://arxiv.org/abs/2508.02739)
+[![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python)](https://python.org)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.11-ee4c2c?logo=pytorch)](https://pytorch.org)
+[![Flask](https://img.shields.io/badge/Flask-3.1-black?logo=flask)](https://flask.palletsprojects.com)
+[![CUDA](https://img.shields.io/badge/CUDA-12.8-76b900?logo=nvidia)](https://developer.nvidia.com/cuda-toolkit)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 [中文](#中文) · [English](#english) · [日本語](#日本語)
 
@@ -21,156 +25,188 @@
 
 ---
 
-## English
-
-### What is this?
-
-KRONOS Terminal is a local web application that wraps the **Kronos Foundation Model** — the first open-source foundation model for financial candlestick (K-line) data, pre-trained on 12 billion+ K-line records from 45 global exchanges and accepted at **AAAI 2026**.
-
-This tool provides a Bloomberg-style terminal interface where you can:
-- Input any stock ticker supported by Yahoo Finance
-- Run Kronos-base (102.3M parameters) on your local GPU
-- Visualize historical + predicted K-lines with MACD, RSI, Bollinger Bands
-- Zoom, pan, and interact with the chart in real time
-
-### Quick Start
-
-**Requirements:** Anaconda, NVIDIA GPU (optional but recommended)
-
-```bash
-# 1. Clone both repos
-git clone https://github.com/shiyu-coder/Kronos
-git clone https://github.com/YOUR_USERNAME/kronos-terminal
-cp kronos-terminal/* Kronos/
-
-# 2. Setup conda environment
-conda create -n kronos python=3.10
-conda activate kronos
-cd Kronos
-pip install -r requirements.txt
-pip install flask flask-cors yfinance matplotlib
-
-# 3. Install PyTorch with CUDA (check nvidia-smi for your CUDA version)
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
-
-# 4. Launch (Windows)
-double-click start.bat
-
-# 4. Launch (macOS / Linux)
-bash start.sh
-```
-
-Select your language → two servers start automatically → browser opens.
-
-### Architecture
-
-```
-start.bat / start.sh
-    ├── kronos_server.py  (Flask API · port 5000 · conda kronos env)
-    │       └── Kronos-base model (HuggingFace: NeoQuasar/Kronos-base)
-    └── python -m http.server 8080
-            └── kronos_terminal.html  (Browser UI)
-```
-
-### Parameters
-
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| History Window | 60 days | How many trading days of data to feed the model |
-| Forecast Days | 5 days | Number of days to predict (≤10 recommended) |
-| Samples | 50 | Monte Carlo paths — more = more stable, slower |
-| Temperature | 0.70 | Sampling temperature — lower = more conservative |
-
-### Disclaimer
-
-This tool is for **academic research and technical demonstration only**. Predictions do not constitute investment advice. Financial markets involve significant uncertainty.
-
----
-
 ## 中文
 
-### 这是什么？
+### 简介
 
-KRONOS Terminal 是一个本地 Web 应用，集成了 **Kronos 基础模型** —— 首个面向金融K线图的开源基础模型，基于全球 45 家交易所超过 120 亿条K线记录预训练，已被 **AAAI 2026** 接收。
+KRONOS 是基于 [Kronos 时序基础模型](https://www.zdoc.app/zh/shiyu-coder/Kronos) 构建的本地股票预测系统。通过 GUI 启动器一键启动，在浏览器中以交互式 K 线图查看 AI 预测结果。
 
-本工具提供彭博终端风格的界面，功能包括：
-- 输入任意 Yahoo Finance 支持的股票代码
-- 在本地 GPU 上运行 Kronos-base（102.3M 参数）
-- 可视化历史 + 预测K线，含 MACD、RSI、布林带
-- 图表缩放、平移、十字线实时交互
+### 功能特性
+
+- 🤖 **AI 预测** — Kronos-mini / small / base 三档模型，概率采样生成预测 K 线
+- 📊 **交互式图表** — 烛台图 + MA5/20/60 + 布林带 + MACD + RSI + 成交量，支持拖拽/缩放
+- 🖥️ **GUI 启动器** — tkinter 界面，自动检测 conda、安装依赖、启动服务
+- 🌐 **多语言** — 中文 / English / 日本語 界面切换
+- 🔒 **本地运行** — 全程离线推理，数据不上传任何服务器
 
 ### 快速开始
 
-**环境要求：** Anaconda、NVIDIA GPU（可选但推荐）
+#### 1. 环境要求
+- Windows 10/11
+- [Miniconda](https://docs.conda.io/en/latest/miniconda.html) 或 Anaconda
+- NVIDIA GPU（推荐，CPU 也可运行）
+
+#### 2. 创建 conda 环境并安装依赖
 
 ```bash
-# 1. 克隆仓库
-git clone https://github.com/shiyu-coder/Kronos
-cd Kronos
-
-# 将本项目文件复制到 Kronos 目录下
-
-# 2. 创建 conda 环境
-conda create -n kronos python=3.10
+conda create -n kronos python=3.10 -y
 conda activate kronos
-pip install -r requirements.txt
-pip install flask flask-cors yfinance matplotlib
-
-# 3. 安装 PyTorch（根据 nvidia-smi 显示的 CUDA 版本选择）
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
-
-# 4. 一键启动（Windows）
-双击 start.bat，选择语言，自动打开浏览器
+pip install flask flask-cors yfinance torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+pip install pandas numpy matplotlib huggingface-hub safetensors einops
 ```
 
-### 注意事项
+#### 3. 下载 Kronos 模型
 
-- 首次运行会从 HuggingFace 下载约 **409MB** 的模型权重
-- 如果下载慢，可设置镜像：`set HF_ENDPOINT=https://hf-mirror.com`
-- 预测天数建议 **≤ 10 天**，越短越准确
-- 红涨绿跌配色（A股风格）
+```bash
+# 模型来源
+# https://www.zdoc.app/zh/shiyu-coder/Kronos
+# 将模型仓库克隆到本地，例如 D:\desk\KABUYOSO\Kronos
+```
 
-### 免责声明
+#### 4. 配置并启动
 
-本工具仅供学术研究和技术演示，预测结果**不构成投资建议**。金融市场存在高度不确定性，请独立做出投资决策。
+编辑 `kronos_config.ini`：
+
+```ini
+CONDA_ENV=kronos
+MODEL_DIR=D:/path/to/Kronos
+LANG=zh
+```
+
+双击运行 `kronos_launcher.py`，点击 **启动** 即可。
+
+### 文件结构
+
+```
+KRONOS/
+├── kronos_launcher.py      # GUI 启动器
+├── kronos_server.py        # Flask REST API 服务器
+├── kronos_terminal.html    # 浏览器交互图表 UI
+├── kronos_predictor.py     # CLI 预测工具（含 matplotlib 图表）
+├── kronos_config.ini       # 配置文件
+├── environment.txt         # 依赖包清单
+└── .kronos_lang            # 语言传递文件（自动生成）
+```
+
+### API 接口
+
+| 端点 | 方法 | 说明 |
+|---|---|---|
+| `/api/health` | GET | 健康检查 |
+| `/api/config` | GET | 当前配置 |
+| `/api/predict` | POST | K 线预测 |
+| `/api/quote` | GET | 历史行情 |
+
+---
+
+## English
+
+### Overview
+
+KRONOS is a local stock forecasting system built on the [Kronos time-series foundation model](https://www.zdoc.app/zh/shiyu-coder/Kronos). Launch with one click via the GUI launcher, then view AI-predicted candlesticks in an interactive browser chart.
+
+### Features
+
+- 🤖 **AI Forecast** — Kronos-mini / small / base models with probabilistic sampling
+- 📊 **Interactive Chart** — Candlestick + MA + Bollinger Bands + MACD + RSI + Volume with drag/zoom
+- 🖥️ **GUI Launcher** — Auto-detects conda, installs dependencies, starts services
+- 🌐 **Multi-language** — Chinese / English / Japanese UI
+- 🔒 **Fully Local** — All inference runs locally, no data sent to external servers
+
+### Quick Start
+
+```bash
+# 1. Create environment
+conda create -n kronos python=3.10 -y
+conda activate kronos
+
+# 2. Install dependencies
+pip install flask flask-cors yfinance torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+pip install pandas numpy matplotlib huggingface-hub safetensors einops
+
+# 3. Edit kronos_config.ini, then run:
+python kronos_launcher.py
+```
 
 ---
 
 ## 日本語
 
-### これは何？
+### 概要
 
-KRONOS Terminal は **Kronos 基盤モデル** を利用したローカル Web アプリです。世界 45 の取引所から 120 億件以上の K 線データで学習した金融 K 線特化型モデルで、**AAAI 2026** に採択されています。
+KRONOS は [Kronos 時系列基盤モデル](https://www.zdoc.app/zh/shiyu-coder/Kronos) を使った株式・為替予測システムです。GUI ランチャーからワンクリックで起動し、ブラウザ上でインタラクティブなローソク足チャートで予測結果を確認できます。
+
+### 特徴
+
+- 🤖 **AI 予測** — Kronos-mini / small / base モデル、確率的サンプリングで将来 K 線を生成
+- 📊 **インタラクティブチャート** — ローソク足・MA・ボリンジャーバンド・MACD・RSI・出来高、ドラッグ/ズーム対応
+- 🖥️ **GUI ランチャー** — conda 自動検出・依存関係インストール・サービス起動を 1 クリックで完結
+- 🌐 **多言語対応** — 中国語 / 英語 / 日本語 切り替え
+- 🔒 **ローカル完結** — 推論はすべてローカルで実行、データは外部に送信されない
 
 ### クイックスタート
 
 ```bash
-git clone https://github.com/shiyu-coder/Kronos
-cd Kronos
-conda create -n kronos python=3.10
+# 1. 仮想環境作成
+conda create -n kronos python=3.10 -y
 conda activate kronos
-pip install -r requirements.txt
-pip install flask flask-cors yfinance matplotlib
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 
-# 起動（Windows）
-start.bat をダブルクリック → 言語選択 → 自動でブラウザが開きます
+# 2. 依存関係インストール
+pip install flask flask-cors yfinance torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+pip install pandas numpy matplotlib huggingface-hub safetensors einops
+
+# 3. kronos_config.ini を編集後、起動：
+python kronos_launcher.py
 ```
 
-### 免責事項
+### 動作確認済み環境
 
-本ツールは学術研究・技術デモ目的のみです。予測結果は投資助言ではありません。
+| 項目 | 内容 |
+|---|---|
+| OS | Windows 11 |
+| GPU | NVIDIA GeForce RTX 5070 Ti (16 GB VRAM) |
+| CUDA | 12.8 (Driver 591.74) |
+| Python | 3.10 |
+| PyTorch | 2.11.0+cu128 |
 
 ---
 
-## Credits
+## Screenshots
 
-- **Kronos Model** — [shiyu-coder/Kronos](https://github.com/shiyu-coder/Kronos) · [Paper](https://arxiv.org/abs/2508.02739)
-- **Data Source** — [Yahoo Finance](https://finance.yahoo.com) via `yfinance`
-- **Pre-trained Weights** — [NeoQuasar/Kronos-base](https://huggingface.co/NeoQuasar/Kronos-base)
+<div align="center">
+
+**Interactive Chart (Japanese UI)**
+
+![KRONOS Chart](demo.png)
+
+**GUI Launcher**
+
+![KRONOS Launcher](demoUI.png)
+
+</div>
+
+---
+
+## Model Credits
+
+Kronos model by [shiyu-coder](https://www.zdoc.app/zh/shiyu-coder/Kronos).
+This repository provides only the launcher, API server, and UI — model weights are downloaded separately from HuggingFace.
+
+| Model | HuggingFace |
+|---|---|
+| Kronos-mini | `NeoQuasar/Kronos-mini` |
+| Kronos-small | `NeoQuasar/Kronos-small` |
+| Kronos-base | `NeoQuasar/Kronos-base` |
+| Tokenizer (2k) | `NeoQuasar/Kronos-Tokenizer-2k` |
+| Tokenizer (base) | `NeoQuasar/Kronos-Tokenizer-base` |
+
+---
 
 ## License
 
 MIT License — see [LICENSE](LICENSE) for details.
 
-> ⚠️ **Important:** The Kronos model weights are subject to the original repository's license. This terminal is a UI wrapper and is not affiliated with the official Kronos project.
+> ⚠️ **免責事項 / Disclaimer / 免责声明**
+> 本システムは教育・研究目的です。投資判断には使用しないでください。
+> For educational and research purposes only. Not financial advice.
+> 本系统仅供教育和研究目的，不构成投资建议。

@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <title>KRONOS Terminal</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
 :root{
@@ -57,9 +59,6 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .quick-tickers{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
 .qt{background:var(--bg2);border:1px solid var(--line2);color:var(--text2);font-family:var(--mono);font-size:10px;padding:5px 2px;text-align:center;cursor:pointer;transition:all .1s;border-radius:1px}
 .qt:hover{border-color:var(--acc);color:var(--acc)}
-.model-btn{background:var(--bg2);border:1px solid var(--line2);color:var(--text2);font-family:var(--mono);font-size:10px;padding:5px 2px;text-align:center;cursor:pointer;transition:all .1s;border-radius:1px;letter-spacing:1px}
-.model-btn:hover{border-color:var(--acc);color:var(--acc)}
-.model-btn.active{background:rgba(243,156,18,.15);border-color:var(--acc);color:var(--acc);font-weight:700}
 .param-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .param-label{font-size:10px;color:var(--text2)}
 .param-val{font-size:11px;color:var(--text0);font-weight:600;min-width:40px;text-align:right}
@@ -129,15 +128,15 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   </div>
   <div class="topbar-right">
     <div style="display:flex;gap:3px">
-      <button class="lang-btn" id="lb-zh" data-lang="zh">中文</button>
-      <button class="lang-btn" id="lb-en" data-lang="en">EN</button>
-      <button class="lang-btn" id="lb-ja" data-lang="ja">日本語</button>
+      <button class="lang-btn" id="lb-zh" onclick="switchLang('zh')">中文</button>
+      <button class="lang-btn" id="lb-en" onclick="switchLang('en')">EN</button>
+      <button class="lang-btn" id="lb-ja" onclick="switchLang('ja')">日本語</button>
     </div>
     <div style="display:flex;gap:3px">
-      <button class="zc-btn" data-zoom="in">＋</button>
-      <button class="zc-btn" data-zoom="out">－</button>
-      <button class="zc-btn" data-zoom="reset">↺</button>
-      <button class="zc-btn" id="btnMode" data-zoom="toggle">🔍</button>
+      <button class="zc-btn" onclick="zoomIn()">＋</button>
+      <button class="zc-btn" onclick="zoomOut()">－</button>
+      <button class="zc-btn" onclick="resetZoom()">↺</button>
+      <button class="zc-btn" id="btnMode" onclick="toggleMode()">🔍</button>
     </div>
     <span class="signal-pill sig-n" id="sigRSI">RSI —</span>
     <span class="signal-pill sig-n" id="sigMACD">MACD —</span>
@@ -153,20 +152,18 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
       <div class="sec-title" id="t-ticker">股票代码</div>
       <input type="text" id="tickerInput" class="ticker-input" value="MU" placeholder="AAPL" maxlength="10" onkeydown="if(event.key==='Enter')runKronos()">
       <div class="quick-tickers">
-        <button class="qt" data-ticker="AAPL">AAPL</button>
-        <button class="qt" data-ticker="TSLA">TSLA</button>
-        <button class="qt" data-ticker="NVDA">NVDA</button>
-        <button class="qt" data-ticker="MSFT">MSFT</button>
-        <button class="qt" data-ticker="MU">MU</button>
-        <button class="qt" data-ticker="META">META</button>
-        <button class="qt" data-ticker="GOOG">GOOG</button>
-        <button class="qt" data-ticker="AMD">AMD</button>
-        <button class="qt" data-ticker="BTC-USD">BTC</button>
-        <button class="qt" data-ticker="ETH-USD">ETH</button>
-        <button class="qt" data-ticker="USDJPY=X">USD/JPY</button>
-        <button class="qt" data-ticker="EURUSD=X">EUR/USD</button>
-        <button class="qt" data-ticker="7203.T">7203</button>
-        <button class="qt" data-ticker="9988.HK">9988</button>
+        <button class="qt" onclick="setTicker('AAPL')">AAPL</button>
+        <button class="qt" onclick="setTicker('TSLA')">TSLA</button>
+        <button class="qt" onclick="setTicker('NVDA')">NVDA</button>
+        <button class="qt" onclick="setTicker('MSFT')">MSFT</button>
+        <button class="qt" onclick="setTicker('MU')">MU</button>
+        <button class="qt" onclick="setTicker('META')">META</button>
+        <button class="qt" onclick="setTicker('GOOG')">GOOG</button>
+        <button class="qt" onclick="setTicker('AMD')">AMD</button>
+        <button class="qt" onclick="setTicker('BTC-USD')">BTC</button>
+        <button class="qt" onclick="setTicker('ETH-USD')">ETH</button>
+        <button class="qt" onclick="setTicker('7203.T')">7203</button>
+        <button class="qt" onclick="setTicker('9988.HK')">9988</button>
       </div>
     </div>
     <div class="panel-section">
@@ -179,17 +176,9 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
       <input type="range" class="param-slider" id="sliderSamples" min="5" max="100" value="50" step="5" oninput="updateSlider('valSamples',this.value,'t-paths')">
       <div class="param-row"><span class="param-label">Temperature</span><span class="param-val" id="valTemp">0.70</span></div>
       <input type="range" class="param-slider" id="sliderTemp" min="0.1" max="2.0" value="0.7" step="0.05" oninput="document.getElementById('valTemp').textContent=parseFloat(this.value).toFixed(2)">
-      <div class="param-row"><span class="param-label" id="t-topp-lbl">Top-p</span><span class="param-val" id="valTopP">0.90</span></div>
-      <input type="range" class="param-slider" id="sliderTopP" min="0.1" max="1.0" value="0.9" step="0.05" oninput="document.getElementById('valTopP').textContent=parseFloat(this.value).toFixed(2)">
-      <div class="param-row" style="margin-top:4px"><span class="param-label" id="t-model-lbl">模型大小</span></div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:6px">
-        <button class="model-btn active" data-model="mini">mini</button>
-        <button class="model-btn" data-model="small">small</button>
-        <button class="model-btn" data-model="base">base</button>
-      </div>
     </div>
     <div class="panel-section">
-      <button class="run-btn" id="runBtn" data-action="run">▶ <span id="t-run">执行</span></button>
+      <button class="run-btn" id="runBtn" onclick="runKronos()">▶ <span id="t-run">执行</span></button>
     </div>
     <div class="panel-section" id="statsSection" style="display:none">
       <div class="sec-title" id="t-summary">预测摘要</div>
@@ -243,7 +232,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
       </div>
       <div class="chart-divider"></div>
       <div class="chart-wrap vol-chart">
-        <div class="chart-label" id="t-vol-lbl">成交量</div>
+        <div class="chart-label">VOLUME</div>
         <canvas id="volChart"></canvas>
       </div>
     </div>
@@ -274,7 +263,6 @@ const I18N = {
     server_hint:'   启动: python kronos_server.py',
     mode_zoom:'🔍缩放', mode_pan:'🖐平移',
     ob:'超买', os:'超卖', neu:'中性', bull:'多头', bear:'空头',
-    model_lbl:'模型大小', vol_lbl:'成交量', topp_lbl:'Top-p',
     steps:['连接 Yahoo Finance...','下载K线数据...','初始化模型...','分词处理...','自回归推理...','蒙特卡洛采样...','影线裁剪...','计算指标...','渲染图表...'],
   },
   en: {
@@ -292,7 +280,6 @@ const I18N = {
     server_hint:'   Start: python kronos_server.py',
     mode_zoom:'🔍Zoom', mode_pan:'🖐Pan',
     ob:'Overbought', os:'Oversold', neu:'Neutral', bull:'Bullish', bear:'Bearish',
-    model_lbl:'Model Size', vol_lbl:'VOLUME', topp_lbl:'Top-p',
     steps:['Connecting Yahoo Finance...','Downloading K-lines...','Loading model...','Tokenizing...','Autoregressive inference...','Monte Carlo sampling...','Clipping wicks...','Computing indicators...','Rendering charts...'],
   },
   ja: {
@@ -310,7 +297,6 @@ const I18N = {
     server_hint:'   起動: python kronos_server.py',
     mode_zoom:'🔍拡大', mode_pan:'🖐移動',
     ob:'買われ過ぎ', os:'売られ過ぎ', neu:'中立', bull:'強気', bear:'弱気',
-    model_lbl:'モデルサイズ', vol_lbl:'出来高', topp_lbl:'Top-p',
     steps:['Yahoo Finance 接続中...','K線データ取得中...','モデル初期化中...','トークン処理中...','自己回帰推論中...','モンテカルロ実行中...','ヒゲカット処理中...','指標計算中...','チャート描画中...'],
   },
 };
@@ -329,28 +315,21 @@ function applyLang(){
     const b=document.getElementById('lb-'+l);
     if(b) b.className='lang-btn'+(L===l?' active':'');
   });
-  // Update all labeled elements (textContent)
+  // Update all labeled elements
   const map={
     't-ticker':'ticker','t-params':'params','t-period':'period','t-pred':'pred',
     't-samples':'samples','t-run':'run','t-summary':'summary','t-tech':'tech',
     't-log':'log','t-daily':'daily','t-hint':'hint','t-forecast':'forecast',
-    't-inferring':'inferring','t-hint2':'hint2',
-    't-model-lbl':'model_lbl','t-vol-lbl':'vol_lbl','t-topp-lbl':'topp_lbl',
+    't-inferring':'inferring','t-hint2':'hint2','t-disclaimer':'disclaimer',
   };
   Object.entries(map).forEach(([id,key])=>{
     const el=document.getElementById(id);
     if(el) el.textContent=t(key);
   });
-  // Disclaimer — use innerHTML to preserve the <a> link
-  const disc=document.getElementById('t-disclaimer');
-  if(disc){
-    disc.innerHTML=`${t('disclaimer')} | <a href="https://www.zdoc.app/zh/shiyu-coder/Kronos" target="_blank" style="color:var(--blue2)">zdoc.app/zh/shiyu-coder/Kronos</a>`;
-  }
   // Update slider displays
   updateSliderDisplay();
   // Update mode button
-  const modeBtn=document.getElementById('btnMode');
-  if(modeBtn) modeBtn.textContent=dragMode?t('mode_zoom'):t('mode_pan');
+  document.getElementById('btnMode').textContent=dragMode?t('mode_zoom'):t('mode_pan');
   // Re-log server status
   updateServerLed();
 }
@@ -533,9 +512,8 @@ async function checkServer(){
   updateServerLed();
 }
 async function fetchRealPred(ticker,period,predLen,samples,temp){
-  const topP=parseFloat(document.getElementById('sliderTopP').value);
   const r=await fetch(`${API}/api/predict`,{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ticker,period,pred_len:predLen,model_size:_selectedModel,samples,temperature:temp,top_p:topP}),
+    body:JSON.stringify({ticker,period,pred_len:predLen,model_size:'base',samples,temperature:temp,top_p:.9}),
     signal:AbortSignal.timeout(120000)});
   const d=await r.json();if(!d.ok)throw new Error(d.error);
   return{
@@ -551,115 +529,22 @@ setInterval(checkServer,10000);
 // Chart zoom/pan
 // ═══════════════════════════════════════════════════════
 let dragMode=false;
-let _selectedModel='mini';  // 当前选中的模型大小
 let kChart=null,macdCh=null,rsiCh=null,volCh=null;
-let _allDates=[],_ohlc=[],_nHist=0,_decPlaces=2;
+let _allDates=[],_ohlc=[],_nHist=0;
 
-// ── Custom pan/zoom state ──────────────────────────────────────────────
-let _xMin=0,_xMax=0,_yMin=0,_yMax=0;          // current view ranges
-let _xMinFull=0,_xMaxFull=0;                   // full X extent
-let _yMinFull=0,_yMaxFull=0;                   // full Y extent (data-driven)
-let _isPanning=false,_panStartX=0,_panStartXMin=0,_panStartXMax=0;
-// dragMode declared above
-
-function setViewX(lo,hi){
-  lo=Math.max(_xMinFull,lo); hi=Math.min(_xMaxFull,hi);
-  if(hi-lo<3){const mid=(lo+hi)/2;lo=mid-1.5;hi=mid+1.5;}
-  _xMin=lo; _xMax=hi;
-  applyView();
-}
-
-function applyView(){
-  // Compute tight Y from visible data points
-  const lo=Math.floor(Math.max(0,_xMin)), hi=Math.ceil(Math.min(_ohlc.length-1,_xMax));
-  let vHi=-Infinity,vLo=Infinity;
-  for(let i=lo;i<=hi;i++){
-    if(!_ohlc[i])continue;
-    if(_ohlc[i].h>vHi)vHi=_ohlc[i].h;
-    if(_ohlc[i].l<vLo)vLo=_ohlc[i].l;
-  }
-  if(vHi===-Infinity){vHi=_yMaxFull;vLo=_yMinFull;}
-  const pad=(vHi-vLo)*0.08||vHi*0.01;
-  _yMin=vLo-pad; _yMax=vHi+pad;
-
-  if(!kChart)return;
-  // Apply to kline chart
-  kChart.options.scales.x.min=_xMin;
-  kChart.options.scales.x.max=_xMax;
-  kChart.options.scales.y.min=_yMin;
-  kChart.options.scales.y.max=_yMax;
-  kChart.update('none');
-  // Sync sub-charts X only
-  [macdCh,rsiCh].forEach(c=>{
-    if(!c)return;
-    c.options.scales.x.min=_xMin;
-    c.options.scales.x.max=_xMax;
-    c.update('none');
-  });
-}
-
-function zoomIn(){
-  const cx=(_xMin+_xMax)/2,half=(_xMax-_xMin)/2;
-  setViewX(cx-half*0.65,cx+half*0.65);
-}
-function zoomOut(){
-  const cx=(_xMin+_xMax)/2,half=(_xMax-_xMin)/2;
-  setViewX(cx-half*1.4,cx+half*1.4);
-}
-function resetZoom(){
-  _xMin=_xMinFull;_xMax=_xMaxFull;
-  _yMin=_yMinFull;_yMax=_yMaxFull;
-  applyView();
-}
 function toggleMode(){
   dragMode=!dragMode;
   document.getElementById('btnMode').textContent=dragMode?t('mode_zoom'):t('mode_pan');
+  [kChart,macdCh,rsiCh].forEach(c=>{
+    if(!c)return;
+    c.options.plugins.zoom.zoom.drag.enabled=!dragMode;
+    c.options.plugins.zoom.pan.enabled=dragMode;
+    c.update('none');
+  });
 }
-
-// Attach wheel zoom to kline canvas
-function attachCanvasEvents(){
-  const canvas=document.getElementById('klineChart');
-  if(!canvas)return;
-
-  // Wheel → zoom X (Y auto-adjusts via applyView)
-  canvas.addEventListener('wheel',e=>{
-    e.preventDefault();
-    if(!kChart)return;
-    const rect=canvas.getBoundingClientRect();
-    const xFrac=(e.clientX-rect.left)/rect.width;
-    const span=_xMax-_xMin;
-    const factor=e.deltaY>0?1.15:0.87;
-    const newSpan=Math.max(3,span*factor);
-    const pivot=_xMin+xFrac*span;
-    setViewX(pivot-xFrac*newSpan, pivot+(1-xFrac)*newSpan);
-  },{passive:false});
-
-  // Mouse drag → pan
-  canvas.addEventListener('mousedown',e=>{
-    if(e.button!==0)return;
-    _isPanning=true;
-    _panStartX=e.clientX;
-    _panStartXMin=_xMin;
-    _panStartXMax=_xMax;
-    canvas.style.cursor='grabbing';
-  });
-  window.addEventListener('mousemove',e=>{
-    if(!_isPanning||!kChart)return;
-    const rect=canvas.getBoundingClientRect();
-    const pxPerBar=rect.width/(_xMax-_xMin);
-    const deltaBar=(e.clientX-_panStartX)/pxPerBar;
-    setViewX(_panStartXMin-deltaBar,_panStartXMax-deltaBar);
-  });
-  window.addEventListener('mouseup',()=>{
-    _isPanning=false;
-    const canvas=document.getElementById('klineChart');
-    if(canvas)canvas.style.cursor='crosshair';
-  });
-
-  // Double click → reset
-  canvas.addEventListener('dblclick',resetZoom);
-  canvas.style.cursor='crosshair';
-}
+function zoomIn(){[kChart,macdCh,rsiCh].forEach(c=>c&&c.zoom(1.3));}
+function zoomOut(){[kChart,macdCh,rsiCh].forEach(c=>c&&c.zoom(.77));}
+function resetZoom(){[kChart,macdCh,rsiCh,volCh].forEach(c=>c&&c.resetZoom());}
 
 // ═══════════════════════════════════════════════════════
 // Candlestick plugin
@@ -697,7 +582,10 @@ const csPlugin={
 };
 Chart.register(csPlugin);
 
-// zoom handled by custom canvas events
+const zoomPlugin={
+  zoom:{wheel:{enabled:true},pinch:{enabled:true},drag:{enabled:true,backgroundColor:'rgba(243,156,18,.06)',borderColor:'rgba(243,156,18,.4)',borderWidth:1},mode:'x'},
+  pan:{enabled:false,mode:'x'},limits:{x:{minRange:5}},
+};
 
 function destroyAll(){[kChart,macdCh,rsiCh,volCh].forEach(c=>{if(c)c.destroy();});kChart=macdCh=rsiCh=volCh=null;}
 
@@ -708,18 +596,7 @@ function mkX(display=true){
     border:{color:'#1e2830'}};
 }
 function mkY(cb=v=>v.toFixed(2)){
-  return{position:'right',grid:{color:'#1a2028',lineWidth:.5},
-    ticks:{color:'#4a5568',font:{family:'IBM Plex Mono',size:9},callback:cb},
-    border:{color:'#1e2830'},beginAtZero:false};
-}
-
-// Compute tight Y range from all visible price data (with padding)
-function calcYRange(hist,pred){
-  const allH=[...hist.map(d=>d.high),...pred.map(d=>d.high)];
-  const allL=[...hist.map(d=>d.low), ...pred.map(d=>d.low)];
-  const hi=Math.max(...allH), lo=Math.min(...allL);
-  const pad=(hi-lo)*0.08; // 8% padding each side
-  return{yMin:lo-pad, yMax:hi+pad};
+  return{position:'right',grid:{color:'#1a2028',lineWidth:.5},ticks:{color:'#4a5568',font:{family:'IBM Plex Mono',size:9},callback:cb},border:{color:'#1e2830'}};
 }
 
 function syncSub(){
@@ -743,13 +620,6 @@ function renderCharts(ticker,hist,pred,p25,p75){
   const ma5=calcMA(allC,5),ma20=calcMA(allC,20),ma60=calcMA(allC,60),boll=calcBOLL(closes);
   const ciLo=Array(n).fill(null).concat(p25),ciHi=Array(n).fill(null).concat(p75);
 
-  // Calculate tight Y range — fixes forex/low-volatility instruments
-  const{yMin,yMax}=calcYRange(hist,pred);
-  // Auto decimal places: forex needs 3, stocks need 2
-  const priceRange=yMax-yMin;
-  const midPrice=(yMax+yMin)/2;
-  const decimalPlaces=midPrice<10?4:midPrice<100?3:midPrice<1000?2:1;
-
   const BASE={responsive:true,maintainAspectRatio:false,animation:{duration:400,easing:'easeOutQuart'},plugins:{legend:{display:false}}};
 
   kChart=new Chart(document.getElementById('klineChart'),{
@@ -770,12 +640,12 @@ function renderCharts(ticker,hist,pred,p25,p75){
         spanGaps:false,label:'Kronos'},
     ]},
     options:{...BASE,
-      plugins:{...BASE.plugins,
+      plugins:{...BASE.plugins,zoom:zoomPlugin,
         tooltip:{enabled:true,mode:'index',intersect:false,
           callbacks:{
             title:ctx=>{const i=ctx[0].dataIndex;return _allDates[i]?.toLocaleDateString()+(i>=n?`  [${t('forecast')}]`:'');},
             label:ctx=>{
-              if(ctx.dataset._isOHLC){const d=_ohlc[ctx.dataIndex];if(!d)return null;const dp=_decPlaces||2;return `O:${d.o.toFixed(dp)}  H:${d.h.toFixed(dp)}  L:${d.l.toFixed(dp)}  C:${d.c.toFixed(dp)}`;}
+              if(ctx.dataset._isOHLC){const d=_ohlc[ctx.dataIndex];if(!d)return null;return `O:${d.o.toFixed(2)}  H:${d.h.toFixed(2)}  L:${d.l.toFixed(2)}  C:${d.c.toFixed(2)}`;}
               if(['MA5','MA20','MA60','Kronos'].includes(ctx.dataset.label)&&ctx.raw!=null)return`${ctx.dataset.label}: ${ctx.raw.toFixed(2)}`;
               return null;
             },
@@ -786,17 +656,12 @@ function renderCharts(ticker,hist,pred,p25,p75){
           titleFont:{family:'IBM Plex Mono',size:11},bodyFont:{family:'IBM Plex Mono',size:10},
         },
       },
-      scales:{x:mkX(false),y:mkY(v=>v.toFixed(decimalPlaces))},
+      scales:{x:mkX(false),y:mkY()},
     },
   });
   kChart._splitAt=n;
-  _decPlaces=decimalPlaces;
-  // Initialize view state
-  _xMinFull=0; _xMaxFull=total-1;
-  _xMin=0; _xMax=total-1;
-  _yMinFull=yMin; _yMaxFull=yMax;
-  applyView();
-  attachCanvasEvents();
+  kChart.options.plugins.zoom.zoom.onZoom=syncSub;
+  kChart.options.plugins.zoom.pan.onPan=syncSub;
 
   // MACD
   const{macd,signal:ms,hist:mh}=calcMACD(closes);
@@ -807,7 +672,7 @@ function renderCharts(ticker,hist,pred,p25,p75){
       {type:'line',data:[...ms,...Array(np).fill(null)],borderColor:'#3498db',borderWidth:.9,pointRadius:0,spanGaps:false},
       {data:[...mh,...Array(np).fill(null)],backgroundColor:mh.map(v=>v==null?'transparent':v>=0?'rgba(192,57,43,.7)':'rgba(39,174,96,.7)'),borderWidth:0,barPercentage:.8},
     ]},
-    options:{...BASE,plugins:{...BASE.plugins},scales:{x:mkX(false),y:mkY(v=>v.toFixed(1))}},
+    options:{...BASE,plugins:{...BASE.plugins,zoom:zoomPlugin},scales:{x:mkX(false),y:mkY(v=>v.toFixed(1))}},
   });
 
   // RSI
@@ -820,7 +685,7 @@ function renderCharts(ticker,hist,pred,p25,p75){
       {data:Array(total).fill(30),borderColor:'rgba(39,174,96,.3)',borderWidth:.7,borderDash:[3,3],pointRadius:0},
       {data:Array(total).fill(50),borderColor:'rgba(74,85,104,.3)',borderWidth:.5,pointRadius:0},
     ]},
-    options:{...BASE,plugins:{...BASE.plugins},scales:{x:mkX(true),y:{...mkY(v=>v),min:0,max:100}}},
+    options:{...BASE,plugins:{...BASE.plugins,zoom:zoomPlugin},scales:{x:mkX(true),y:{...mkY(v=>v),min:0,max:100}}},
   });
 
   // Volume
@@ -832,7 +697,7 @@ function renderCharts(ticker,hist,pred,p25,p75){
 }
 
 // Double click reset
-
+document.getElementById('klineChart').addEventListener('dblclick',resetZoom);
 
 // ═══════════════════════════════════════════════════════
 // Stats panel
@@ -884,8 +749,7 @@ async function runKronos(){
   document.getElementById('runBtn').disabled=true;
   document.getElementById('loadingOverlay').classList.add('show');
   document.getElementById('loadingBar').style.width='0%';
-  const topP=parseFloat(document.getElementById('sliderTopP').value);
-  document.getElementById('chartMeta').textContent=`Kronos-${_selectedModel} · samples=${samples} · T=${temp.toFixed(2)} · top_p=${topP.toFixed(2)} · ${serverOnline?'GPU':'sim'}`;
+  document.getElementById('chartMeta').textContent=`Kronos-base · samples=${samples} · T=${temp.toFixed(2)} · ${serverOnline?'GPU':'sim'}`;
   const loadP=animateLoading(serverOnline?3800:1600);
   try{
     let hist,pred,p25=[],p75=[];
@@ -925,28 +789,6 @@ document.getElementById('tickerInput').addEventListener('keydown',e=>{if(e.key==
 
 // Init
 applyLang();
-
-// ── Event delegation (fixes "not defined" errors) ──────────────────────
-document.addEventListener('click', function(e) {
-  const el = e.target.closest('[data-ticker],[data-lang],[data-zoom],[data-action],[data-model]');
-  if (!el) return;
-  if (el.dataset.ticker) { setTicker(el.dataset.ticker); return; }
-  if (el.dataset.lang)   { switchLang(el.dataset.lang); return; }
-  if (el.dataset.action === 'run') { runKronos(); return; }
-  if (el.dataset.model) {
-    _selectedModel = el.dataset.model;
-    document.querySelectorAll('.model-btn').forEach(b=>b.classList.toggle('active', b.dataset.model===_selectedModel));
-    return;
-  }
-  if (el.dataset.zoom) {
-    const z = el.dataset.zoom;
-    if (z === 'in')     zoomIn();
-    if (z === 'out')    zoomOut();
-    if (z === 'reset')  resetZoom();
-    if (z === 'toggle') toggleMode();
-  }
-});
-
 </script>
 </body>
 </html>
